@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
-import { ShoppingBag, Twitter, Instagram, Facebook, Linkedin } from "lucide-react";
+import { Twitter, Instagram, Facebook, Linkedin } from "lucide-react";
+import AfrivendLogo from "@/components/AfrivendLogo";
 
 const Footer = () => {
   return (
@@ -8,11 +9,11 @@ const Footer = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 lg:gap-12">
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
-            <Link to="/" className="flex items-center gap-2 mb-4">
-              <div className="w-10 h-10 rounded-lg bg-primary-foreground/10 flex items-center justify-center">
-                <ShoppingBag className="w-5 h-5 text-primary-foreground" />
+            <Link to="/" className="inline-block mb-4">
+              <div className="flex items-center gap-3">
+                <AfrivendLogo variant="icon" iconSize={40} />
+                <span className="text-2xl font-bold text-primary-foreground">Afrivend</span>
               </div>
-              <span className="text-2xl font-bold">Afrivend</span>
             </Link>
             <p className="text-primary-foreground/70 text-sm mb-6">
               Africa's trusted marketplace for buyers and sellers.

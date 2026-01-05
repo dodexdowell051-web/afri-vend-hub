@@ -4,7 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Link } from "react-router-dom";
-import { ShoppingBag, Mail } from "lucide-react";
+import { Mail } from "lucide-react";
+import AfrivendLogo from "@/components/AfrivendLogo";
 
 const Login = () => {
   return (
@@ -16,10 +17,8 @@ const Login = () => {
           <div className="bg-card rounded-2xl card-shadow p-8">
             {/* Logo */}
             <div className="text-center mb-8">
-              <Link to="/" className="inline-flex items-center gap-2 mb-4">
-                <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
-                  <ShoppingBag className="w-5 h-5 text-primary-foreground" />
-                </div>
+              <Link to="/" className="inline-block mb-4">
+                <AfrivendLogo variant="full" iconSize={48} />
               </Link>
               <h1 className="text-2xl font-bold">Welcome back</h1>
               <p className="text-muted-foreground mt-1">

@@ -3,11 +3,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Link } from "react-router-dom";
-import { ShoppingBag, Mail } from "lucide-react";
+import { Link, useSearchParams } from "react-router-dom";
+import { Mail } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import AfrivendLogo from "@/components/AfrivendLogo";
 
 const Signup = () => {
+  const [searchParams] = useSearchParams();
+  const defaultRole = searchParams.get("role") || "buyer";
+
   return (
     <div className="min-h-screen bg-muted/30">
       <Header />
@@ -17,10 +21,8 @@ const Signup = () => {
           <div className="bg-card rounded-2xl card-shadow p-8">
             {/* Logo */}
             <div className="text-center mb-8">
-              <Link to="/" className="inline-flex items-center gap-2 mb-4">
-                <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
-                  <ShoppingBag className="w-5 h-5 text-primary-foreground" />
-                </div>
+              <Link to="/" className="inline-block mb-4">
+                <AfrivendLogo variant="full" iconSize={48} />
               </Link>
               <h1 className="text-2xl font-bold">Create your account</h1>
               <p className="text-muted-foreground mt-1">
@@ -29,7 +31,7 @@ const Signup = () => {
             </div>
 
             {/* Account Type Tabs */}
-            <Tabs defaultValue="buyer" className="mb-6">
+            <Tabs defaultValue={defaultRole} className="mb-6">
               <TabsList className="grid w-full grid-cols-2 h-12 rounded-xl">
                 <TabsTrigger value="buyer" className="rounded-lg">I'm a Buyer</TabsTrigger>
                 <TabsTrigger value="seller" className="rounded-lg">I'm a Seller</TabsTrigger>
