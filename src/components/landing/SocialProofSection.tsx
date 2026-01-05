@@ -1,4 +1,4 @@
-import { Star, Quote } from "lucide-react";
+import { Star } from "lucide-react";
 
 const testimonials = [
   {
@@ -27,38 +27,44 @@ const testimonials = [
   },
 ];
 
-const trustedLogos = [
-  { name: "MTN", initials: "MTN" },
-  { name: "Safaricom", initials: "S" },
-  { name: "Access Bank", initials: "AB" },
-  { name: "Flutterwave", initials: "FW" },
-  { name: "Paystack", initials: "PS" },
+const stats = [
+  { value: "4.89M", label: "Products Sold" },
+  { value: "68K", label: "Active Sellers" },
+  { value: "15+", label: "Countries" },
+  { value: "98%", label: "Satisfaction" },
 ];
 
 const SocialProofSection = () => {
   return (
-    <section className="py-20 md:py-28 bg-muted/50">
-      <div className="container mx-auto">
+    <section className="py-16 md:py-24 bg-muted/30 relative overflow-hidden">
+      {/* Decorative background */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-20 -left-20 w-96 h-96 bg-primary/5 blob-shape" />
+        <div className="absolute -bottom-20 -right-20 w-80 h-80 bg-secondary/5 blob-shape-2" />
+        {/* Dots */}
+        <div className="absolute top-1/4 right-1/4 w-3 h-3 rounded-full bg-accent" />
+        <div className="absolute bottom-1/3 left-1/4 w-2 h-2 rounded-full bg-secondary" />
+      </div>
+
+      <div className="container mx-auto relative z-10">
         {/* Header */}
-        <div className="text-center max-w-2xl mx-auto mb-16">
-          <span className="text-secondary font-semibold text-sm uppercase tracking-wider">Trusted by Thousands</span>
+        <div className="text-center max-w-2xl mx-auto mb-12">
+          <span className="text-secondary font-semibold text-sm uppercase tracking-wider">Testimonials</span>
           <h2 className="text-3xl md:text-4xl font-bold mt-4 mb-6">
-            Sellers Love Afrivend
+            What Our Sellers Say
           </h2>
           <p className="text-muted-foreground text-lg">
-            Join the community of successful African entrepreneurs already growing with us.
+            Join thousands of successful African entrepreneurs already thriving with us.
           </p>
         </div>
 
         {/* Testimonials */}
-        <div className="grid md:grid-cols-3 gap-6 lg:gap-8 mb-20">
+        <div className="grid md:grid-cols-3 gap-6 mb-16">
           {testimonials.map((testimonial) => (
             <div
               key={testimonial.name}
-              className="bg-card rounded-2xl p-6 lg:p-8 card-shadow hover:card-shadow-hover transition-all duration-300 relative"
+              className="bg-card rounded-2xl p-6 lg:p-8 card-shadow hover:card-shadow-hover transition-all duration-300"
             >
-              <Quote className="absolute top-6 right-6 w-8 h-8 text-primary/10" />
-              
               {/* Rating */}
               <div className="flex gap-1 mb-4">
                 {[...Array(testimonial.rating)].map((_, i) => (
@@ -71,11 +77,13 @@ const SocialProofSection = () => {
 
               {/* Author */}
               <div className="flex items-center gap-4">
-                <img
-                  src={testimonial.image}
-                  alt={testimonial.name}
-                  className="w-12 h-12 rounded-full object-cover"
-                />
+                <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-secondary/20">
+                  <img
+                    src={testimonial.image}
+                    alt={testimonial.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
                 <div>
                   <p className="font-semibold text-foreground">{testimonial.name}</p>
                   <p className="text-sm text-muted-foreground">
@@ -87,16 +95,13 @@ const SocialProofSection = () => {
           ))}
         </div>
 
-        {/* Trusted By */}
-        <div className="text-center">
-          <p className="text-sm text-muted-foreground mb-8 uppercase tracking-wider">Trusted Payment Partners</p>
-          <div className="flex flex-wrap justify-center items-center gap-8 md:gap-12">
-            {trustedLogos.map((logo) => (
-              <div
-                key={logo.name}
-                className="flex items-center justify-center w-20 h-12 rounded-lg bg-muted text-muted-foreground font-semibold text-lg hover:bg-primary/10 hover:text-primary transition-colors"
-              >
-                {logo.initials}
+        {/* Stats */}
+        <div className="bg-card rounded-3xl p-8 md:p-12 card-shadow">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            {stats.map((stat) => (
+              <div key={stat.label} className="text-center">
+                <p className="text-3xl md:text-4xl font-bold text-primary">{stat.value}</p>
+                <p className="text-muted-foreground mt-1">{stat.label}</p>
               </div>
             ))}
           </div>

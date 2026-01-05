@@ -1,8 +1,10 @@
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import HeroSection from "@/components/landing/HeroSection";
+import BenefitsBar from "@/components/landing/BenefitsBar";
+import CategoriesSection from "@/components/landing/CategoriesSection";
+import FeaturedProductsSection from "@/components/landing/FeaturedProductsSection";
 import FeaturesSection from "@/components/landing/FeaturesSection";
-import HowItWorksSection from "@/components/landing/HowItWorksSection";
 import SocialProofSection from "@/components/landing/SocialProofSection";
 import CTASection from "@/components/landing/CTASection";
 
@@ -12,8 +14,10 @@ const Index = () => {
       <Header />
       <main>
         <HeroSection />
+        <BenefitsBar />
+        <CategoriesSection />
+        <FeaturedProductsSection />
         <FeaturesSection />
-        <HowItWorksSection />
         <SocialProofSection />
         <CTASection />
       </main>
