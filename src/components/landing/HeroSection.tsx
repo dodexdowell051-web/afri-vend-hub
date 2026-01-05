@@ -1,19 +1,48 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { ArrowRight, ShoppingBag, Users, TrendingUp } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import heroImage from "@/assets/hero-entrepreneurs.jpg";
 
 const HeroSection = () => {
   return (
-    <section className="relative min-h-[90vh] flex items-center pt-20 overflow-hidden">
-      {/* Background Elements */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-secondary/5" />
-      <div className="absolute top-20 right-0 w-[600px] h-[600px] bg-primary/10 rounded-full blur-3xl" />
-      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-secondary/10 rounded-full blur-3xl" />
-      
+    <section className="relative min-h-[90vh] flex items-center pt-20 overflow-hidden bg-background">
       <div className="container mx-auto relative z-10">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-          {/* Left Content */}
-          <div className="text-center lg:text-left animate-fade-up">
+          {/* Left Content - Hero Image */}
+          <div className="relative order-2 lg:order-1">
+            <div className="relative">
+              {/* Main Image Container */}
+              <div className="relative rounded-3xl overflow-hidden shadow-2xl">
+                <img
+                  src={heroImage}
+                  alt="African entrepreneurs working together on a laptop"
+                  className="w-full h-auto object-cover aspect-square lg:aspect-[4/5]"
+                />
+                {/* Subtle overlay gradient */}
+                <div className="absolute inset-0 bg-gradient-to-t from-primary/10 to-transparent" />
+              </div>
+              
+              {/* Decorative elements */}
+              <div className="absolute -top-4 -right-4 w-24 h-24 bg-secondary/20 rounded-full blur-2xl" />
+              <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-primary/10 rounded-full blur-2xl" />
+              
+              {/* Floating stat card */}
+              <div className="absolute -bottom-6 -right-6 bg-card rounded-2xl shadow-xl p-4 border border-border animate-float hidden sm:block">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center">
+                    <span className="text-2xl">📈</span>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">This Month</p>
+                    <p className="text-xl font-bold text-foreground">+47% Growth</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Content - Text */}
+          <div className="text-center lg:text-left order-1 lg:order-2 animate-fade-up">
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
               <span className="w-2 h-2 rounded-full bg-secondary animate-pulse" />
@@ -21,7 +50,7 @@ const HeroSection = () => {
             </div>
 
             {/* Headline */}
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6 text-foreground">
               Sell & Buy Smarter{" "}
               <span className="text-gradient">Across Africa</span>
             </h1>
@@ -60,53 +89,6 @@ const HeroSection = () => {
               <div className="text-center lg:text-left">
                 <p className="text-3xl font-bold text-foreground">15+</p>
                 <p className="text-sm text-muted-foreground">African Countries</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Right Content - Visual */}
-          <div className="relative hidden lg:block">
-            <div className="relative z-10">
-              {/* Main Card */}
-              <div className="bg-card rounded-2xl card-shadow p-6 animate-float">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                    <ShoppingBag className="w-6 h-6 text-primary" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-foreground">New Order Received!</p>
-                    <p className="text-sm text-muted-foreground">Lagos, Nigeria</p>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between p-4 bg-muted rounded-xl">
-                  <span className="text-sm text-muted-foreground">Handmade Ankara Bag</span>
-                  <span className="font-semibold text-foreground">₦45,000</span>
-                </div>
-              </div>
-
-              {/* Floating Cards */}
-              <div className="absolute -top-8 -right-8 bg-card rounded-xl card-shadow p-4 animate-float" style={{ animationDelay: "0.5s" }}>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-secondary/10 flex items-center justify-center">
-                    <TrendingUp className="w-5 h-5 text-secondary" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">This Week</p>
-                    <p className="font-semibold text-foreground">+24% Sales</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="absolute -bottom-4 -left-8 bg-card rounded-xl card-shadow p-4 animate-float" style={{ animationDelay: "1s" }}>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-accent/20 flex items-center justify-center">
-                    <Users className="w-5 h-5 text-accent-foreground" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Happy Customers</p>
-                    <p className="font-semibold text-foreground">1,250+</p>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
