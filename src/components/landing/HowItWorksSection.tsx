@@ -4,20 +4,20 @@ const steps = [
   {
     number: "01",
     icon: UserPlus,
-    title: "Create Your Store",
-    description: "Sign up in minutes. Add your business details and you're ready to go.",
+    title: "Create Your Account",
+    description: "Sign up in 2 minutes. Just your name and email – no business registration needed.",
   },
   {
     number: "02",
     icon: Package,
-    title: "List Your Products",
-    description: "Upload photos, set prices, and describe your products. It's that simple.",
+    title: "Upload Your Products",
+    description: "Snap photos, set your price, add a description. That's it – you're live!",
   },
   {
     number: "03",
     icon: Banknote,
-    title: "Start Selling",
-    description: "Receive orders, ship to customers, and get paid fast. Grow your business.",
+    title: "Get Paid Fast",
+    description: "Receive orders, ship to buyers, and get your money in 24-48 hours.",
   },
 ];
 
@@ -27,12 +27,12 @@ const HowItWorksSection = () => {
       <div className="container mx-auto">
         {/* Header */}
         <div className="text-center max-w-2xl mx-auto mb-16">
-          <span className="text-secondary font-semibold text-sm uppercase tracking-wider">Simple Process</span>
+          <span className="text-secondary font-semibold text-sm uppercase tracking-wider">Anyone Can Do It</span>
           <h2 className="text-3xl md:text-4xl font-bold mt-4 mb-6">
-            Start Selling in 3 Easy Steps
+            From Product to Profit in Minutes
           </h2>
           <p className="text-muted-foreground text-lg">
-            We've made selling online as easy as possible. No technical skills needed.
+            Whether you're a student, creator, or small business – if you have something to sell, we make it simple.
           </p>
         </div>
 
