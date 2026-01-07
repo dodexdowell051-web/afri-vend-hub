@@ -1,25 +1,25 @@
-import { Truck, CreditCard, Headphones, ShieldCheck } from "lucide-react";
+import { Users, ShieldCheck, Sparkles, CreditCard } from "lucide-react";
 
 const benefits = [
   {
-    icon: Truck,
-    title: "Free Delivery",
-    description: "On orders above ₦50,000",
+    icon: Users,
+    title: "Real Sellers",
+    description: "Shop from real people, not faceless stores",
   },
   {
     icon: CreditCard,
-    title: "Flexible Payment",
-    description: "Multiple secure payment options",
-  },
-  {
-    icon: Headphones,
-    title: "24/7 Support",
-    description: "We support online all days",
+    title: "Secure Payments",
+    description: "Protected transactions every time",
   },
   {
     icon: ShieldCheck,
-    title: "Buyer Protection",
-    description: "Money-back guarantee",
+    title: "Verified Sellers",
+    description: "Trusted sellers you can count on",
+  },
+  {
+    icon: Sparkles,
+    title: "Easy Discovery",
+    description: "Find unique products easily",
   },
 ];
 

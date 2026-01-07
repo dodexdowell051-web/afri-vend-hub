@@ -3,23 +3,23 @@ import { Zap, Shield, Headphones, CreditCard, Globe, BarChart3 } from "lucide-re
 const features = [
   {
     icon: Zap,
-    title: "Fast Payouts",
-    description: "Get your money within 24-48 hours. No waiting for weeks.",
+    title: "No Barriers",
+    description: "No business license, no paperwork. Just sign up and start selling.",
   },
   {
     icon: CreditCard,
-    title: "Low Fees",
-    description: "Only 5% transaction fee. Keep more of what you earn.",
+    title: "Fair Fees",
+    description: "Only 5% when you sell. No monthly fees, no hidden charges.",
   },
   {
     icon: Headphones,
-    title: "24/7 Support",
-    description: "Dedicated support team ready to help you grow.",
+    title: "Seller Support",
+    description: "We're here to help you succeed, whether you're new or experienced.",
   },
   {
     icon: Shield,
-    title: "Buyer Protection",
-    description: "Secure payments and dispute resolution for trust.",
+    title: "Secure for All",
+    description: "Buyers get protection. Sellers get verified. Everyone wins.",
   },
 ];
 
@@ -64,14 +64,14 @@ const FeaturesSection = () => {
 
           {/* Content Side */}
           <div className="order-1 lg:order-2">
-            <span className="text-secondary font-semibold text-sm uppercase tracking-wider">About Us</span>
+            <span className="text-secondary font-semibold text-sm uppercase tracking-wider">Open for Everyone</span>
             <h2 className="text-3xl md:text-4xl font-bold mt-4 mb-6">
-              Empowering African{" "}
-              <span className="text-gradient">Entrepreneurs</span>
+              Made for{" "}
+              <span className="text-gradient">Real People</span>
             </h2>
             <p className="text-muted-foreground text-lg mb-8">
-              Our promise is to provide the tools and support African sellers need to thrive in the digital economy. 
-              We're building the future of commerce across the continent.
+              Whether you're a student selling handmade crafts, a creator with unique designs, or anyone with products to share – 
+              Afrivend gives you a shop and real buyers, instantly.
             </p>
 
             {/* Features Grid */}
