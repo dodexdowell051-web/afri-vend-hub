@@ -34,25 +34,25 @@ const CTASection = () => {
 
             {/* Content Side */}
             <div className="p-8 lg:p-12 flex flex-col justify-center">
-              <span className="text-secondary font-semibold text-sm uppercase tracking-wider">Your Store Awaits</span>
+              <span className="text-secondary font-semibold text-sm uppercase tracking-wider">Get Started Today</span>
               <h2 className="text-3xl md:text-4xl font-bold mt-4 mb-6">
-                Got Something to Sell?
+                Ready to Grow Your Business?
               </h2>
               <p className="text-muted-foreground text-lg mb-8">
-                You don't need a business to start. Thousands of individuals are already selling on Afrivend – 
-                your neighbors, creators, and everyday people with great products.
+                Join thousands of successful sellers already on Afrivend. 
+                Start selling today – it's free to get started.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button variant="hero" size="lg" asChild>
                   <Link to="/seller">
-                    List Your First Product
+                    Start Selling Free
                     <ArrowRight className="w-5 h-5" />
                   </Link>
                 </Button>
                 <Button variant="ghost" size="lg" className="gap-2">
                   <Play className="w-5 h-5" />
-                  See How It Works
+                  Watch Video
                 </Button>
               </div>
 
@@ -62,19 +62,19 @@ const CTASection = () => {
                   <svg className="w-5 h-5 text-primary" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
-                  No business required
+                  Free to start
                 </span>
                 <span className="flex items-center gap-2">
                   <svg className="w-5 h-5 text-primary" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
-                  Simple product upload
+                  No hidden fees
                 </span>
                 <span className="flex items-center gap-2">
                   <svg className="w-5 h-5 text-primary" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
-                  Fair 5% fee only
+                  Cancel anytime
                 </span>
               </div>
             </div>

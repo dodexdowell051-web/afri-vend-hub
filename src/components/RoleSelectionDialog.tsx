@@ -27,10 +27,10 @@ const RoleSelectionDialog = ({ open, onOpenChange }: RoleSelectionDialogProps) =
 
           <DialogHeader className="text-center mb-8">
             <DialogTitle className="text-2xl font-bold mb-2">
-              Welcome to Afrivend
+              How would you like to use Afrivend?
             </DialogTitle>
             <p className="text-muted-foreground">
-              An open marketplace for everyone
+              Choose your path to get started
             </p>
           </DialogHeader>
 
@@ -46,10 +46,10 @@ const RoleSelectionDialog = ({ open, onOpenChange }: RoleSelectionDialogProps) =
               </div>
               <div className="flex-1">
                 <h3 className="text-lg font-semibold text-foreground mb-1">
-                  I want to Buy
+                  Continue as Buyer
                 </h3>
                 <p className="text-sm text-muted-foreground">
-                  Shop unique products from real people across Africa
+                  Shop products from trusted sellers across Africa
                 </p>
               </div>
               <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
@@ -65,10 +65,10 @@ const RoleSelectionDialog = ({ open, onOpenChange }: RoleSelectionDialogProps) =
               </div>
               <div className="flex-1">
                 <h3 className="text-lg font-semibold text-foreground mb-1">
-                  I want to Sell
+                  Continue as Seller
                 </h3>
                 <p className="text-sm text-muted-foreground">
-                  Start selling in minutes – no business registration needed
+                  Sell products and manage your store with ease
                 </p>
               </div>
               <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-secondary group-hover:translate-x-1 transition-all" />

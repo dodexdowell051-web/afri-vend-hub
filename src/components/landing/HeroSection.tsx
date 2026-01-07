@@ -28,34 +28,33 @@ const HeroSection = () => {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-secondary"></span>
               </span>
-              No Business Needed • Start in Minutes
+              Africa's Fastest Growing Marketplace
             </div>
 
             {/* Headline */}
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6 text-foreground">
-              Anyone Can{" "}
-              <span className="text-gradient">Sell.</span>{" "}
-              <br className="hidden sm:block" />
-              Everyone Can Buy.
+              Sell & Buy{" "}
+              <span className="text-gradient">Smarter</span>{" "}
+              Across Africa
             </h1>
 
             {/* Subtext */}
             <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-xl mx-auto lg:mx-0">
-              Got a product? Start selling in minutes. No business registration required. 
-              Just your product, fair fees, and real buyers waiting.
+              Join thousands of sellers and buyers on Africa's most trusted marketplace. 
+              Low fees, fast payouts, and dedicated support.
             </p>
 
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
               <Button variant="hero" size="xl" asChild>
                 <Link to="/seller">
-                  Start Selling Free
+                  Start Selling
                   <ArrowRight className="w-5 h-5" />
                 </Link>
               </Button>
               <Button variant="hero-outline" size="xl" asChild>
                 <Link to="/marketplace">
-                  Shop from Real Sellers
+                  Explore Marketplace
                 </Link>
               </Button>
             </div>
@@ -64,11 +63,11 @@ const HeroSection = () => {
             <div className="flex flex-wrap justify-center lg:justify-start gap-8 mt-12 pt-8 border-t border-border">
               <div className="text-center lg:text-left">
                 <p className="text-3xl font-bold text-foreground">10K+</p>
-                <p className="text-sm text-muted-foreground">Everyday Sellers</p>
+                <p className="text-sm text-muted-foreground">Active Sellers</p>
               </div>
               <div className="text-center lg:text-left">
                 <p className="text-3xl font-bold text-foreground">50K+</p>
-                <p className="text-sm text-muted-foreground">Unique Products</p>
+                <p className="text-sm text-muted-foreground">Products Listed</p>
               </div>
               <div className="text-center lg:text-left">
                 <p className="text-3xl font-bold text-foreground">15+</p>
