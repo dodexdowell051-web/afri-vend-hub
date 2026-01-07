@@ -15,7 +15,7 @@ const Header = () => {
         <div className="container mx-auto">
           <div className="flex items-center justify-between h-16 md:h-20">
             {/* Logo */}
-            <Link to="/" className="flex items-center">
+            <Link to="/" className="flex items-center transition-all duration-300 hover:drop-shadow-[0_0_12px_rgba(15,95,61,0.5)] hover:scale-[1.02]">
               <AfrivendLogo variant="full" iconSize={48} />
             </Link>
 
