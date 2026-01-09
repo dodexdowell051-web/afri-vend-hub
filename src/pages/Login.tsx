@@ -1,13 +1,70 @@
+import { useState, useEffect } from "react";
 import Header from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Link } from "react-router-dom";
-import { Mail } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import AfrivendLogo from "@/components/AfrivendLogo";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
+import { z } from "zod";
+
+const loginSchema = z.object({
+  email: z.string().email("Please enter a valid email"),
+  password: z.string().min(6, "Password must be at least 6 characters")
+});
 
 const Login = () => {
+  const navigate = useNavigate();
+  const { signIn, user, profile, loading } = useAuth();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+
+  useEffect(() => {
+    if (!loading && user && profile) {
+      // Redirect based on role
+      if (profile.role === "seller") {
+        navigate("/dashboard");
+      } else {
+        navigate("/marketplace");
+      }
+    }
+  }, [user, profile, loading, navigate]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrors({});
+    
+    // Validate
+    const result = loginSchema.safeParse({ email, password });
+    if (!result.success) {
+      const fieldErrors: { email?: string; password?: string } = {};
+      result.error.errors.forEach(err => {
+        if (err.path[0] === "email") fieldErrors.email = err.message;
+        if (err.path[0] === "password") fieldErrors.password = err.message;
+      });
+      setErrors(fieldErrors);
+      return;
+    }
+    
+    setIsSubmitting(true);
+    const { error } = await signIn(email, password);
+    setIsSubmitting(false);
+    
+    if (error) {
+      if (error.message.includes("Invalid login credentials")) {
+        toast.error("Invalid email or password");
+      } else {
+        toast.error(error.message);
+      }
+    } else {
+      toast.success("Welcome back!");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-muted/30">
       <Header />
@@ -27,7 +84,7 @@ const Login = () => {
             </div>
 
             {/* Form */}
-            <form className="space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-5">
               <div className="space-y-2">
                 <Label htmlFor="email">Email Address</Label>
                 <Input 
@@ -35,7 +92,10 @@ const Login = () => {
                   type="email" 
                   placeholder="Enter your email" 
                   className="h-12 rounded-xl"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                 />
+                {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
               </div>
 
               <div className="space-y-2">
@@ -50,11 +110,20 @@ const Login = () => {
                   type="password" 
                   placeholder="Enter your password" 
                   className="h-12 rounded-xl"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                 />
+                {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
               </div>
 
-              <Button variant="default" size="lg" className="w-full">
-                Log In
+              <Button 
+                type="submit" 
+                variant="default" 
+                size="lg" 
+                className="w-full"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Logging in..." : "Log In"}
               </Button>
             </form>
 
@@ -65,14 +134,8 @@ const Login = () => {
               <Separator className="flex-1" />
             </div>
 
-            {/* Social Login */}
-            <Button variant="outline" size="lg" className="w-full">
-              <Mail className="w-5 h-5 mr-2" />
-              Continue with Google
-            </Button>
-
             {/* Sign Up Link */}
-            <p className="text-center text-sm text-muted-foreground mt-6">
+            <p className="text-center text-sm text-muted-foreground">
               Don't have an account?{" "}
               <Link to="/signup" className="text-primary font-medium hover:underline">
                 Sign up
