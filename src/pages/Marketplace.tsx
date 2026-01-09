@@ -1,116 +1,67 @@
+import { useState, useEffect } from "react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Filter, Heart, Star, MapPin, ShoppingCart } from "lucide-react";
-import { useState } from "react";
+import { Search, Filter, Heart, Star, MapPin, ShoppingCart, Package } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useCart } from "@/contexts/CartContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 const categories = [
-  "All", "Fashion", "Electronics", "Home & Living", "Beauty", "Food", "Art & Crafts", "Accessories"
+  "All", "Fashion", "Electronics", "Home & Garden", "Beauty", "Food & Beverages", "Sports", "Crafts", "Other"
 ];
 
-const products = [
-  {
-    id: 1,
-    name: "Handmade Ankara Tote Bag",
-    price: 25000,
-    currency: "₦",
-    image: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=400&h=400&fit=crop",
-    seller: "Amara's Boutique",
-    location: "Lagos, Nigeria",
-    rating: 4.9,
-    reviews: 128,
-    category: "Fashion",
-  },
-  {
-    id: 2,
-    name: "Beaded Statement Necklace",
-    price: 15000,
-    currency: "₦",
-    image: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=400&h=400&fit=crop",
-    seller: "Zuri Jewelry",
-    location: "Accra, Ghana",
-    rating: 4.8,
-    reviews: 89,
-    category: "Accessories",
-  },
-  {
-    id: 3,
-    name: "African Print Wall Art",
-    price: 35000,
-    currency: "₦",
-    image: "https://images.unsplash.com/photo-1578301978693-85fa9c0320b9?w=400&h=400&fit=crop",
-    seller: "ArtHub Africa",
-    location: "Nairobi, Kenya",
-    rating: 5.0,
-    reviews: 56,
-    category: "Art & Crafts",
-  },
-  {
-    id: 4,
-    name: "Natural Shea Butter Set",
-    price: 12000,
-    currency: "₦",
-    image: "https://images.unsplash.com/photo-1608248597279-f99d160bfcbc?w=400&h=400&fit=crop",
-    seller: "Pure Naturals",
-    location: "Abuja, Nigeria",
-    rating: 4.7,
-    reviews: 234,
-    category: "Beauty",
-  },
-  {
-    id: 5,
-    name: "Wireless Earbuds Pro",
-    price: 45000,
-    currency: "₦",
-    image: "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=400&h=400&fit=crop",
-    seller: "TechZone NG",
-    location: "Lagos, Nigeria",
-    rating: 4.6,
-    reviews: 312,
-    category: "Electronics",
-  },
-  {
-    id: 6,
-    name: "Handwoven Basket Set",
-    price: 18000,
-    currency: "₦",
-    image: "https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?w=400&h=400&fit=crop",
-    seller: "Craft Masters",
-    location: "Kampala, Uganda",
-    rating: 4.9,
-    reviews: 67,
-    category: "Home & Living",
-  },
-  {
-    id: 7,
-    name: "Organic Honey Collection",
-    price: 8000,
-    currency: "₦",
-    image: "https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=400&h=400&fit=crop",
-    seller: "Nature's Gold",
-    location: "Addis Ababa, Ethiopia",
-    rating: 4.8,
-    reviews: 145,
-    category: "Food",
-  },
-  {
-    id: 8,
-    name: "Kente Cloth Dress",
-    price: 55000,
-    currency: "₦",
-    image: "https://images.unsplash.com/photo-1590735213920-68192a487bc2?w=400&h=400&fit=crop",
-    seller: "Royal African Wear",
-    location: "Accra, Ghana",
-    rating: 5.0,
-    reviews: 89,
-    category: "Fashion",
-  },
-];
+interface Product {
+  id: string;
+  name: string;
+  description: string | null;
+  price: number;
+  stock: number;
+  image_url: string | null;
+  category: string | null;
+  store: {
+    id: string;
+    name: string;
+  };
+}
 
 const Marketplace = () => {
   const [activeCategory, setActiveCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { addToCart } = useCart();
+  const { user } = useAuth();
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const fetchProducts = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("products")
+      .select(`
+        id,
+        name,
+        description,
+        price,
+        stock,
+        image_url,
+        category,
+        store:stores (id, name)
+      `)
+      .eq("is_active", true)
+      .gt("stock", 0)
+      .order("created_at", { ascending: false });
+
+    if (!error && data) {
+      setProducts(data as unknown as Product[]);
+    }
+    setLoading(false);
+  };
 
   const filteredProducts = products.filter((product) => {
     const matchesCategory = activeCategory === "All" || product.category === activeCategory;
@@ -118,8 +69,12 @@ const Marketplace = () => {
     return matchesCategory && matchesSearch;
   });
 
-  const formatPrice = (price: number, currency: string) => {
-    return `${currency}${price.toLocaleString()}`;
+  const handleAddToCart = async (productId: string) => {
+    if (!user) {
+      toast.error("Please sign in to add items to cart");
+      return;
+    }
+    await addToCart(productId);
   };
 
   return (
@@ -127,7 +82,7 @@ const Marketplace = () => {
       <Header />
       
       <main className="pt-24 pb-16">
-        <div className="container mx-auto">
+        <div className="container mx-auto px-4">
           {/* Page Header */}
           <div className="text-center mb-12">
             <h1 className="text-3xl md:text-4xl font-bold mb-4">
@@ -173,61 +128,76 @@ const Marketplace = () => {
           </div>
 
           {/* Products Grid */}
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredProducts.map((product) => (
-              <div
-                key={product.id}
-                className="bg-card rounded-2xl overflow-hidden card-shadow hover:card-shadow-hover transition-all duration-300 group"
-              >
-                {/* Image */}
-                <div className="relative aspect-square overflow-hidden">
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <button className="absolute top-3 right-3 w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-secondary transition-colors">
-                    <Heart className="w-5 h-5" />
-                  </button>
-                </div>
-
-                {/* Content */}
-                <div className="p-4">
-                  <div className="flex items-center gap-1 text-sm text-muted-foreground mb-2">
-                    <MapPin className="w-3 h-3" />
-                    <span>{product.location}</span>
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            </div>
+          ) : filteredProducts.length === 0 ? (
+            <div className="text-center py-16">
+              <Package className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-xl font-semibold mb-2">No products found</h3>
+              <p className="text-muted-foreground">Try a different search or category</p>
+            </div>
+          ) : (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {filteredProducts.map((product) => (
+                <div
+                  key={product.id}
+                  className="bg-card rounded-2xl overflow-hidden card-shadow hover:card-shadow-hover transition-all duration-300 group"
+                >
+                  {/* Image */}
+                  <div className="relative aspect-square overflow-hidden bg-muted">
+                    {product.image_url ? (
+                      <img
+                        src={product.image_url}
+                        alt={product.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Package className="w-12 h-12 text-muted-foreground" />
+                      </div>
+                    )}
+                    <button className="absolute top-3 right-3 w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-secondary transition-colors">
+                      <Heart className="w-5 h-5" />
+                    </button>
                   </div>
-                  <h3 className="font-semibold text-foreground mb-1 line-clamp-1">
-                    {product.name}
-                  </h3>
-                  <p className="text-xs text-muted-foreground mb-3">
-                    by {product.seller}
-                  </p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-lg font-bold text-primary">
-                      {formatPrice(product.price, product.currency)}
-                    </span>
-                    <div className="flex items-center gap-1 text-sm">
-                      <Star className="w-4 h-4 fill-accent text-accent" />
-                      <span className="font-medium">{product.rating}</span>
-                      <span className="text-muted-foreground">({product.reviews})</span>
+
+                  {/* Content */}
+                  <div className="p-4">
+                    <p className="text-xs text-muted-foreground mb-2">
+                      by {product.store?.name || "Unknown Store"}
+                    </p>
+                    <h3 className="font-semibold text-foreground mb-1 line-clamp-1">
+                      {product.name}
+                    </h3>
+                    {product.description && (
+                      <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+                        {product.description}
+                      </p>
+                    )}
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="text-lg font-bold text-primary">
+                        ₦{product.price.toLocaleString()}
+                      </span>
+                      <span className="text-sm text-muted-foreground">
+                        {product.stock} in stock
+                      </span>
                     </div>
+                    <Button 
+                      variant="secondary" 
+                      className="w-full" 
+                      size="sm"
+                      onClick={() => handleAddToCart(product.id)}
+                    >
+                      <ShoppingCart className="w-4 h-4 mr-2" />
+                      Add to Cart
+                    </Button>
                   </div>
-                  <Button variant="secondary" className="w-full mt-4" size="sm">
-                    <ShoppingCart className="w-4 h-4 mr-2" />
-                    Add to Cart
-                  </Button>
                 </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Load More */}
-          <div className="text-center mt-12">
-            <Button variant="outline" size="lg">
-              Load More Products
-            </Button>
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </main>
 
