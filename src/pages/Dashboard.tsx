@@ -10,6 +10,7 @@ import { useProducts } from "@/hooks/useProducts";
 import { useSellerDashboard } from "@/hooks/useSellerDashboard";
 import { AddProductDialog } from "@/components/seller/AddProductDialog";
 import { ProductsTable } from "@/components/seller/ProductsTable";
+import { StoreSettingsDialog } from "@/components/seller/StoreSettingsDialog";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -41,14 +42,21 @@ const Dashboard = () => {
         <div className="container mx-auto px-4">
           {/* Welcome Header */}
           <div className="mb-8">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                <Store className="w-6 h-6 text-primary" />
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center overflow-hidden">
+                  {store.logo_url ? (
+                    <img src={store.logo_url} alt={store.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <Store className="w-6 h-6 text-primary" />
+                  )}
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold">{store.name}</h1>
+                  <p className="text-muted-foreground">Welcome back, {profile.first_name}!</p>
+                </div>
               </div>
-              <div>
-                <h1 className="text-2xl font-bold">{store.name}</h1>
-                <p className="text-muted-foreground">Welcome back, {profile.first_name}!</p>
-              </div>
+              <StoreSettingsDialog />
             </div>
           </div>
 

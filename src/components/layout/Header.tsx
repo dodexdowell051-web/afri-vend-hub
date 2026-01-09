@@ -1,10 +1,11 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, LogOut, User } from "lucide-react";
+import { Menu, X, LogOut, User, ShoppingCart } from "lucide-react";
 import { useState } from "react";
 import AfrivendLogo from "@/components/AfrivendLogo";
 import RoleSelectionDialog from "@/components/RoleSelectionDialog";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCart } from "@/contexts/CartContext";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,6 +18,7 @@ const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [signInDialogOpen, setSignInDialogOpen] = useState(false);
   const { user, profile, signOut } = useAuth();
+  const { totalItems } = useCart();
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
@@ -39,6 +41,9 @@ const Header = () => {
               <Link to="/" className="text-muted-foreground hover:text-foreground transition-colors font-medium">
                 Home
               </Link>
+              <Link to="/marketplace" className="text-muted-foreground hover:text-foreground transition-colors font-medium">
+                Marketplace
+              </Link>
               <Link to="/about" className="text-muted-foreground hover:text-foreground transition-colors font-medium">
                 About
               </Link>
@@ -47,15 +52,23 @@ const Header = () => {
                   Dashboard
                 </Link>
               )}
-              {user && (
-                <Link to="/marketplace" className="text-muted-foreground hover:text-foreground transition-colors font-medium">
-                  Marketplace
-                </Link>
-              )}
             </nav>
 
             {/* Desktop CTA */}
-            <div className="hidden md:flex items-center">
+            <div className="hidden md:flex items-center gap-4">
+              {user && (
+                <Link to="/cart" className="relative">
+                  <Button variant="ghost" size="icon">
+                    <ShoppingCart className="w-5 h-5" />
+                    {totalItems > 0 && (
+                      <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-bold">
+                        {totalItems}
+                      </span>
+                    )}
+                  </Button>
+                </Link>
+              )}
+              
               {user ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -69,6 +82,9 @@ const Header = () => {
                       <Link to={profile?.role === "seller" ? "/dashboard" : "/marketplace"}>
                         {profile?.role === "seller" ? "Dashboard" : "Marketplace"}
                       </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/orders">My Orders</Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
@@ -89,12 +105,26 @@ const Header = () => {
             </div>
 
             {/* Mobile Menu Button */}
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 text-foreground"
-            >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
+            <div className="flex items-center gap-2 md:hidden">
+              {user && (
+                <Link to="/cart" className="relative">
+                  <Button variant="ghost" size="icon">
+                    <ShoppingCart className="w-5 h-5" />
+                    {totalItems > 0 && (
+                      <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-bold">
+                        {totalItems}
+                      </span>
+                    )}
+                  </Button>
+                </Link>
+              )}
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="p-2 text-foreground"
+              >
+                {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              </button>
+            </div>
           </div>
 
           {/* Mobile Menu */}
@@ -107,6 +137,13 @@ const Header = () => {
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Home
+                </Link>
+                <Link 
+                  to="/marketplace" 
+                  className="text-foreground font-medium py-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Marketplace
                 </Link>
                 <Link 
                   to="/about" 
@@ -126,11 +163,11 @@ const Header = () => {
                 )}
                 {user && (
                   <Link 
-                    to="/marketplace" 
+                    to="/orders" 
                     className="text-foreground font-medium py-2"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    Marketplace
+                    My Orders
                   </Link>
                 )}
                 <div className="pt-4 border-t border-border">
