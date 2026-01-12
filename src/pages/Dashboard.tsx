@@ -11,6 +11,8 @@ import { useSellerDashboard } from "@/hooks/useSellerDashboard";
 import { AddProductDialog } from "@/components/seller/AddProductDialog";
 import { ProductsTable } from "@/components/seller/ProductsTable";
 import { StoreSettingsDialog } from "@/components/seller/StoreSettingsDialog";
+import SellerOrdersTable from "@/components/seller/SellerOrdersTable";
+import WalletCard from "@/components/seller/WalletCard";
 
 const Dashboard = () => {
   const navigate = useNavigate();

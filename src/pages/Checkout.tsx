@@ -88,6 +88,7 @@ const Checkout = () => {
       }, {} as Record<string, typeof items>);
 
       const orderIds: string[] = [];
+      const deliveryAddress = `${formData.address}, ${formData.city}, ${formData.state}`;
 
       // Create orders for each store
       for (const [storeId, storeItems] of Object.entries(itemsByStore)) {
@@ -102,12 +103,19 @@ const Checkout = () => {
             buyer_id: user.id,
             store_id: storeId,
             status: "pending",
+            payment_status: "pending",
             total: orderTotal,
+            customer_name: formData.fullName,
+            delivery_phone: formData.phone,
+            delivery_address: deliveryAddress,
           })
           .select()
           .single();
 
-        if (orderError) throw orderError;
+        if (orderError) {
+          console.error("Order creation error:", orderError);
+          throw new Error("Failed to create order");
+        }
 
         orderIds.push(order.id);
 
@@ -123,13 +131,17 @@ const Checkout = () => {
           .from("order_items")
           .insert(orderItems);
 
-        if (itemsError) throw itemsError;
+        if (itemsError) {
+          console.error("Order items error:", itemsError);
+          throw new Error("Failed to create order items");
+        }
 
         // Update product stock
         for (const item of storeItems) {
+          const newStock = Math.max(0, item.product.stock - item.quantity);
           await supabase
             .from("products")
-            .update({ stock: item.product.stock - item.quantity })
+            .update({ stock: newStock })
             .eq("id", item.product_id);
         }
       }
@@ -141,29 +153,33 @@ const Checkout = () => {
           body: {
             email: profile?.email || user.email,
             amount: totalPrice,
-            orderId: orderIds[0],
+            orderIds,
             metadata: {
-              orderIds,
               customerName: formData.fullName,
               phone: formData.phone,
-              address: `${formData.address}, ${formData.city}, ${formData.state}`,
+              address: deliveryAddress,
             },
           },
         }
       );
 
-      if (paymentError) throw paymentError;
+      if (paymentError) {
+        console.error("Payment error:", paymentError);
+        throw new Error(paymentError.message || "Payment initialization failed");
+      }
 
       if (paymentData?.data?.authorization_url) {
         await clearCart();
         // Redirect to Paystack payment page
         window.location.href = paymentData.data.authorization_url;
+      } else if (paymentData?.error) {
+        throw new Error(paymentData.error);
       } else {
         throw new Error("Failed to get payment URL");
       }
     } catch (error) {
       console.error("Checkout error:", error);
-      toast.error("Failed to process checkout. Please try again.");
+      toast.error(error instanceof Error ? error.message : "Failed to process checkout. Please try again.");
     } finally {
       setLoading(false);
     }
