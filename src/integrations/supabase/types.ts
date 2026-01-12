@@ -95,7 +95,16 @@ export type Database = {
         Row: {
           buyer_id: string
           created_at: string | null
+          customer_name: string | null
+          delivered_at: string | null
+          delivery_address: string | null
+          delivery_phone: string | null
           id: string
+          paid_at: string | null
+          payment_reference: string | null
+          payment_status: string | null
+          platform_commission: number | null
+          seller_earning: number | null
           status: string | null
           store_id: string
           total: number
@@ -104,7 +113,16 @@ export type Database = {
         Insert: {
           buyer_id: string
           created_at?: string | null
+          customer_name?: string | null
+          delivered_at?: string | null
+          delivery_address?: string | null
+          delivery_phone?: string | null
           id?: string
+          paid_at?: string | null
+          payment_reference?: string | null
+          payment_status?: string | null
+          platform_commission?: number | null
+          seller_earning?: number | null
           status?: string | null
           store_id: string
           total?: number
@@ -113,7 +131,16 @@ export type Database = {
         Update: {
           buyer_id?: string
           created_at?: string | null
+          customer_name?: string | null
+          delivered_at?: string | null
+          delivery_address?: string | null
+          delivery_phone?: string | null
           id?: string
+          paid_at?: string | null
+          payment_reference?: string | null
+          payment_status?: string | null
+          platform_commission?: number | null
+          seller_earning?: number | null
           status?: string | null
           store_id?: string
           total?: number
@@ -128,6 +155,68 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      payment_verifications: {
+        Row: {
+          amount: number
+          id: string
+          order_id: string
+          payment_reference: string
+          paystack_response: Json | null
+          verified_at: string | null
+        }
+        Insert: {
+          amount: number
+          id?: string
+          order_id: string
+          payment_reference: string
+          paystack_response?: Json | null
+          verified_at?: string | null
+        }
+        Update: {
+          amount?: number
+          id?: string
+          order_id?: string
+          payment_reference?: string
+          paystack_response?: Json | null
+          verified_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_verifications_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      platform_settings: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          key: string
+          updated_at: string | null
+          value: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          key: string
+          updated_at?: string | null
+          value: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          key?: string
+          updated_at?: string | null
+          value?: string
+        }
+        Relationships: []
       }
       products: {
         Row: {
@@ -268,6 +357,54 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      wallet_transactions: {
+        Row: {
+          amount: number
+          created_at: string | null
+          description: string | null
+          id: string
+          order_id: string | null
+          status: string
+          type: string
+          wallet_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          order_id?: string | null
+          status?: string
+          type: string
+          wallet_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          order_id?: string | null
+          status?: string
+          type?: string
+          wallet_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wallet_transactions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wallet_transactions_wallet_id_fkey"
+            columns: ["wallet_id"]
+            isOneToOne: false
+            referencedRelation: "seller_wallets"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
