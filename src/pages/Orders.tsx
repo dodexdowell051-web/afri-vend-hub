@@ -3,7 +3,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Package, ShoppingBag, Clock, CheckCircle, Truck, XCircle } from "lucide-react";
+import { Package, ShoppingBag, Clock, CheckCircle, Truck, XCircle, CreditCard } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
@@ -22,8 +22,13 @@ interface OrderItem {
 interface Order {
   id: string;
   status: string;
+  payment_status: string;
   total: number;
   created_at: string;
+  paid_at: string | null;
+  delivered_at: string | null;
+  customer_name: string | null;
+  delivery_address: string | null;
   store: {
     name: string;
   };
@@ -32,7 +37,7 @@ interface Order {
 
 const statusConfig: Record<string, { label: string; icon: React.ComponentType<{ className?: string }>; className: string }> = {
   pending: { 
-    label: "Pending", 
+    label: "Pending Payment", 
     icon: Clock, 
     className: "bg-accent/20 text-accent-foreground border-accent" 
   },
@@ -46,8 +51,8 @@ const statusConfig: Record<string, { label: string; icon: React.ComponentType<{ 
     icon: Truck, 
     className: "bg-purple-100 text-purple-700 border-purple-200" 
   },
-  completed: { 
-    label: "Completed", 
+  delivered: { 
+    label: "Delivered", 
     icon: CheckCircle, 
     className: "bg-primary/10 text-primary border-primary/20" 
   },
@@ -56,6 +61,12 @@ const statusConfig: Record<string, { label: string; icon: React.ComponentType<{ 
     icon: XCircle, 
     className: "bg-destructive/10 text-destructive border-destructive/20" 
   },
+};
+
+const paymentStatusConfig: Record<string, { label: string; className: string }> = {
+  pending: { label: "Unpaid", className: "bg-yellow-100 text-yellow-700" },
+  paid: { label: "Paid", className: "bg-green-100 text-green-700" },
+  failed: { label: "Failed", className: "bg-red-100 text-red-700" },
 };
 
 const Orders = () => {
@@ -78,8 +89,13 @@ const Orders = () => {
       .select(`
         id,
         status,
+        payment_status,
         total,
         created_at,
+        paid_at,
+        delivered_at,
+        customer_name,
+        delivery_address,
         store:stores (name),
         order_items (
           id,
@@ -99,6 +115,10 @@ const Orders = () => {
 
   const getStatusConfig = (status: string) => {
     return statusConfig[status] || statusConfig.pending;
+  };
+
+  const getPaymentStatusConfig = (status: string) => {
+    return paymentStatusConfig[status] || paymentStatusConfig.pending;
   };
 
   if (!user) {
@@ -158,6 +178,7 @@ const Orders = () => {
             <div className="space-y-6">
               {orders.map((order) => {
                 const config = getStatusConfig(order.status);
+                const paymentConfig = getPaymentStatusConfig(order.payment_status || "pending");
                 const StatusIcon = config.icon;
                 
                 return (
@@ -176,16 +197,36 @@ const Orders = () => {
                             })}
                           </p>
                         </div>
-                        <Badge variant="outline" className={`flex items-center gap-1.5 ${config.className}`}>
-                          <StatusIcon className="w-3.5 h-3.5" />
-                          {config.label}
-                        </Badge>
+                        <div className="flex flex-wrap gap-2">
+                          <Badge variant="outline" className={`flex items-center gap-1 ${paymentConfig.className}`}>
+                            <CreditCard className="w-3 h-3" />
+                            {paymentConfig.label}
+                          </Badge>
+                          <Badge variant="outline" className={`flex items-center gap-1.5 ${config.className}`}>
+                            <StatusIcon className="w-3.5 h-3.5" />
+                            {config.label}
+                          </Badge>
+                        </div>
                       </div>
                     </CardHeader>
                     <CardContent className="pt-4">
-                      <p className="text-sm text-muted-foreground mb-4">
-                        Sold by: <span className="font-medium text-foreground">{order.store?.name}</span>
-                      </p>
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                        <p className="text-sm text-muted-foreground">
+                          Sold by: <span className="font-medium text-foreground">{order.store?.name}</span>
+                        </p>
+                        {order.paid_at && (
+                          <p className="text-xs text-muted-foreground">
+                            Paid on {new Date(order.paid_at).toLocaleDateString()}
+                          </p>
+                        )}
+                      </div>
+
+                      {order.delivery_address && (
+                        <div className="bg-muted/30 rounded-lg p-3 mb-4 text-sm">
+                          <p className="font-medium mb-1">Delivery Address</p>
+                          <p className="text-muted-foreground">{order.delivery_address}</p>
+                        </div>
+                      )}
                       
                       <div className="space-y-3">
                         {order.order_items?.map((item) => (
@@ -216,6 +257,12 @@ const Orders = () => {
                         <span className="font-medium">Total</span>
                         <span className="text-xl font-bold text-primary">₦{order.total.toLocaleString()}</span>
                       </div>
+
+                      {order.delivered_at && (
+                        <p className="text-xs text-muted-foreground text-right mt-2">
+                          Delivered on {new Date(order.delivered_at).toLocaleDateString()}
+                        </p>
+                      )}
                     </CardContent>
                   </Card>
                 );

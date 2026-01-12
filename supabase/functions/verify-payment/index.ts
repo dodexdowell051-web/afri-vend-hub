@@ -8,7 +8,7 @@ const corsHeaders = {
 
 interface VerifyRequest {
   reference: string;
-  orderId: string;
+  orderId?: string;
 }
 
 serve(async (req: Request) => {
@@ -26,13 +26,35 @@ serve(async (req: Request) => {
     }
 
     const { reference, orderId }: VerifyRequest = await req.json();
+    console.log("Verifying payment:", { reference, orderId });
 
     if (!reference) {
-      throw new Error("Missing reference");
+      throw new Error("Missing payment reference");
+    }
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+    // Check if payment was already verified (prevent duplicate)
+    const { data: existingVerification } = await supabase
+      .from("payment_verifications")
+      .select("id")
+      .eq("payment_reference", reference)
+      .maybeSingle();
+
+    if (existingVerification) {
+      console.log("Payment already verified:", reference);
+      return new Response(JSON.stringify({
+        success: true,
+        message: "Payment already verified",
+        alreadyVerified: true,
+      }), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
     }
 
     // Verify payment with Paystack
-    const response = await fetch(`https://api.paystack.co/transaction/verify/${reference}`, {
+    const response = await fetch(`https://api.paystack.co/transaction/verify/${encodeURIComponent(reference)}`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
@@ -40,6 +62,7 @@ serve(async (req: Request) => {
     });
 
     const data = await response.json();
+    console.log("Paystack verification response:", data);
 
     if (!data.status) {
       throw new Error(data.message || "Failed to verify payment");
@@ -47,17 +70,53 @@ serve(async (req: Request) => {
 
     const paymentData = data.data;
 
-    // Update order status if payment is successful
-    if (paymentData.status === "success" && orderId) {
-      const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-      
-      await supabase
+    if (paymentData.status === "success") {
+      // Get all orders with this payment reference
+      const { data: orders, error: ordersError } = await supabase
         .from("orders")
-        .update({ 
-          status: "processing",
-          updated_at: new Date().toISOString()
-        })
-        .eq("id", orderId);
+        .select("id, store_id, seller_earning")
+        .eq("payment_reference", reference);
+
+      if (ordersError) {
+        console.error("Error fetching orders:", ordersError);
+        throw new Error("Failed to fetch orders");
+      }
+
+      console.log("Orders to update:", orders);
+
+      // Record payment verification to prevent duplicates
+      const { error: verificationError } = await supabase
+        .from("payment_verifications")
+        .insert({
+          payment_reference: reference,
+          order_id: orders?.[0]?.id || orderId,
+          amount: paymentData.amount / 100,
+          paystack_response: paymentData,
+        });
+
+      if (verificationError) {
+        console.error("Error recording verification:", verificationError);
+      }
+
+      // Update all orders with this reference
+      const now = new Date().toISOString();
+      for (const order of orders || []) {
+        const { error: updateError } = await supabase
+          .from("orders")
+          .update({
+            status: "processing",
+            payment_status: "paid",
+            paid_at: now,
+            updated_at: now,
+          })
+          .eq("id", order.id);
+
+        if (updateError) {
+          console.error("Error updating order:", updateError);
+        }
+      }
+
+      console.log("Payment verified successfully, orders updated to processing");
     }
 
     return new Response(JSON.stringify({
@@ -67,6 +126,7 @@ serve(async (req: Request) => {
         amount: paymentData.amount / 100,
         reference: paymentData.reference,
         paidAt: paymentData.paid_at,
+        channel: paymentData.channel,
       }
     }), {
       status: 200,
