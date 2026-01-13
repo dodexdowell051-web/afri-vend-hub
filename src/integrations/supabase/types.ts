@@ -49,6 +49,67 @@ export type Database = {
           },
         ]
       }
+      financial_transactions: {
+        Row: {
+          amount: number
+          created_at: string | null
+          description: string | null
+          id: string
+          metadata: Json | null
+          order_id: string | null
+          payout_id: string | null
+          type: string
+          user_id: string | null
+          wallet_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          order_id?: string | null
+          payout_id?: string | null
+          type: string
+          user_id?: string | null
+          wallet_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          order_id?: string | null
+          payout_id?: string | null
+          type?: string
+          user_id?: string | null
+          wallet_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_transactions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_transactions_payout_id_fkey"
+            columns: ["payout_id"]
+            isOneToOne: false
+            referencedRelation: "payouts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_transactions_wallet_id_fkey"
+            columns: ["wallet_id"]
+            isOneToOne: false
+            referencedRelation: "seller_wallets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_items: {
         Row: {
           created_at: string | null
@@ -191,6 +252,98 @@ export type Database = {
           },
         ]
       }
+      payouts: {
+        Row: {
+          account_name: string | null
+          account_number: string | null
+          amount: number
+          bank_name: string | null
+          created_at: string | null
+          id: string
+          notes: string | null
+          payment_method: string | null
+          payment_reference: string | null
+          processed_at: string | null
+          processed_by: string | null
+          seller_id: string
+          status: string
+          updated_at: string | null
+          wallet_id: string
+        }
+        Insert: {
+          account_name?: string | null
+          account_number?: string | null
+          amount: number
+          bank_name?: string | null
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          payment_method?: string | null
+          payment_reference?: string | null
+          processed_at?: string | null
+          processed_by?: string | null
+          seller_id: string
+          status?: string
+          updated_at?: string | null
+          wallet_id: string
+        }
+        Update: {
+          account_name?: string | null
+          account_number?: string | null
+          amount?: number
+          bank_name?: string | null
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          payment_method?: string | null
+          payment_reference?: string | null
+          processed_at?: string | null
+          processed_by?: string | null
+          seller_id?: string
+          status?: string
+          updated_at?: string | null
+          wallet_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payouts_wallet_id_fkey"
+            columns: ["wallet_id"]
+            isOneToOne: false
+            referencedRelation: "seller_wallets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      platform_balance: {
+        Row: {
+          completed_payouts: number
+          created_at: string | null
+          id: string
+          pending_payouts: number
+          total_commissions: number
+          total_revenue: number
+          updated_at: string | null
+        }
+        Insert: {
+          completed_payouts?: number
+          created_at?: string | null
+          id?: string
+          pending_payouts?: number
+          total_commissions?: number
+          total_revenue?: number
+          updated_at?: string | null
+        }
+        Update: {
+          completed_payouts?: number
+          created_at?: string | null
+          id?: string
+          pending_payouts?: number
+          total_commissions?: number
+          total_revenue?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       platform_settings: {
         Row: {
           created_at: string | null
@@ -277,6 +430,7 @@ export type Database = {
           last_name: string | null
           phone: string | null
           role: Database["public"]["Enums"]["app_role"] | null
+          seller_status: string | null
           updated_at: string | null
         }
         Insert: {
@@ -287,6 +441,7 @@ export type Database = {
           last_name?: string | null
           phone?: string | null
           role?: Database["public"]["Enums"]["app_role"] | null
+          seller_status?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -297,6 +452,7 @@ export type Database = {
           last_name?: string | null
           phone?: string | null
           role?: Database["public"]["Enums"]["app_role"] | null
+          seller_status?: string | null
           updated_at?: string | null
         }
         Relationships: []
@@ -333,6 +489,7 @@ export type Database = {
           created_at: string | null
           description: string | null
           id: string
+          is_suspended: boolean | null
           logo_url: string | null
           name: string
           updated_at: string | null
@@ -342,6 +499,7 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           id?: string
+          is_suspended?: boolean | null
           logo_url?: string | null
           name: string
           updated_at?: string | null
@@ -351,9 +509,31 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           id?: string
+          is_suspended?: boolean | null
           logo_url?: string | null
           name?: string
           updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
         }
         Relationships: []
@@ -411,7 +591,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "buyer" | "seller" | "admin"
