@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { AdminSidebar } from "@/components/admin/AdminSidebar";
+import { SuperAdminSidebar } from "@/components/admin/SuperAdminSidebar";
 import { OrdersTable } from "@/components/admin/OrdersTable";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -74,7 +74,7 @@ const AdminOrders = () => {
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
-        <AdminSidebar />
+        <SuperAdminSidebar />
         <main className="flex-1 overflow-auto">
           <header className="h-16 border-b border-border flex items-center px-6 bg-card">
             <SidebarTrigger className="mr-4" />

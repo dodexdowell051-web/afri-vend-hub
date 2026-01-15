@@ -1,16 +1,29 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
-import { useAdminDashboard } from "@/hooks/useAdminDashboard";
+import { useSuperAdminDashboard } from "@/hooks/useSuperAdminDashboard";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { AdminSidebar } from "@/components/admin/AdminSidebar";
-import { AdminOverview } from "@/components/admin/AdminOverview";
+import { SuperAdminSidebar } from "@/components/admin/SuperAdminSidebar";
+import { SuperAdminOverview } from "@/components/admin/SuperAdminOverview";
 import { Loader2 } from "lucide-react";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const { isAdmin, loading: authLoading } = useAdminAuth();
-  const { stats, platformBalance, commissionRate, loading: dataLoading, refreshData } = useAdminDashboard();
+  const { 
+    users, 
+    stores, 
+    products, 
+    orders, 
+    wallets, 
+    payouts, 
+    disputes, 
+    refunds, 
+    platformBalance, 
+    platformSettings,
+    loading: dataLoading,
+    refreshData
+  } = useSuperAdminDashboard();
 
   useEffect(() => {
     if (!authLoading && !isAdmin) {
@@ -33,17 +46,27 @@ const AdminDashboard = () => {
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
-        <AdminSidebar />
+        <SuperAdminSidebar />
         <main className="flex-1 overflow-auto">
           <header className="h-16 border-b border-border flex items-center px-6 bg-card">
             <SidebarTrigger className="mr-4" />
-            <h1 className="text-xl font-semibold">Dashboard Overview</h1>
+            <div>
+              <h1 className="text-xl font-semibold">Super Admin Dashboard</h1>
+              <p className="text-sm text-muted-foreground">Platform Overview & Control Center</p>
+            </div>
           </header>
           <div className="p-6">
-            <AdminOverview 
-              stats={stats} 
-              platformBalance={platformBalance} 
-              commissionRate={commissionRate}
+            <SuperAdminOverview 
+              users={users}
+              stores={stores}
+              products={products}
+              orders={orders}
+              wallets={wallets}
+              payouts={payouts}
+              disputes={disputes}
+              refunds={refunds}
+              platformBalance={platformBalance}
+              platformSettings={platformSettings}
               onRefresh={refreshData}
             />
           </div>

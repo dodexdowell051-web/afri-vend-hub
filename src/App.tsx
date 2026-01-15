@@ -23,6 +23,10 @@ import AdminProducts from "./pages/admin/AdminProducts";
 import AdminOrders from "./pages/admin/AdminOrders";
 import AdminPayouts from "./pages/admin/AdminPayouts";
 import AdminSettings from "./pages/admin/AdminSettings";
+import AdminDisputes from "./pages/admin/AdminDisputes";
+import AdminRefunds from "./pages/admin/AdminRefunds";
+import AdminAuditLogs from "./pages/admin/AdminAuditLogs";
+import AdminWallets from "./pages/admin/AdminWallets";
 
 const queryClient = new QueryClient();
 
@@ -46,12 +50,16 @@ const App = () => (
               <Route path="/orders" element={<Orders />} />
               <Route path="/order-confirmation" element={<OrderConfirmation />} />
               <Route path="/about" element={<About />} />
-              {/* Admin Routes */}
+              {/* Super Admin Routes */}
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/admin/users" element={<AdminUsers />} />
               <Route path="/admin/products" element={<AdminProducts />} />
               <Route path="/admin/orders" element={<AdminOrders />} />
+              <Route path="/admin/wallets" element={<AdminWallets />} />
               <Route path="/admin/payouts" element={<AdminPayouts />} />
+              <Route path="/admin/disputes" element={<AdminDisputes />} />
+              <Route path="/admin/refunds" element={<AdminRefunds />} />
+              <Route path="/admin/audit-logs" element={<AdminAuditLogs />} />
               <Route path="/admin/settings" element={<AdminSettings />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
