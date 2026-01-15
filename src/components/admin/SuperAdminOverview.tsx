@@ -17,19 +17,26 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
-interface DashboardStats {
-  totalUsers: number;
-  totalSellers: number;
-  totalBuyers: number;
-  pendingSellers: number;
-  approvedSellers: number;
-  suspendedSellers: number;
-  totalProducts: number;
-  activeProducts: number;
-  totalOrders: number;
-  pendingOrders: number;
-  totalDisputes: number;
-  pendingDisputes: number;
+interface User {
+  id: string;
+  role: string | null;
+  seller_status: string | null;
+}
+
+interface Store {
+  is_suspended: boolean | null;
+}
+
+interface Product {
+  is_active: boolean | null;
+}
+
+interface Order {
+  status: string | null;
+}
+
+interface Dispute {
+  status: string;
 }
 
 interface PlatformBalance {
@@ -39,10 +46,25 @@ interface PlatformBalance {
   completed_payouts: number;
 }
 
+interface PlatformSettings {
+  commission_rate: string;
+  min_withdrawal_amount: string;
+  payout_schedule: string;
+  auto_payouts_enabled: string;
+  escrow_release_days: string;
+}
+
 interface SuperAdminOverviewProps {
-  stats: DashboardStats;
+  users: User[];
+  stores: Store[];
+  products: Product[];
+  orders: Order[];
+  wallets: unknown[];
+  payouts: unknown[];
+  disputes: Dispute[];
+  refunds: unknown[];
   platformBalance: PlatformBalance | null;
-  commissionRate: string;
+  platformSettings: PlatformSettings;
   onRefresh: () => void;
 }
 
@@ -54,7 +76,31 @@ const formatCurrency = (amount: number) => {
   }).format(amount);
 };
 
-export const SuperAdminOverview = ({ stats, platformBalance, commissionRate, onRefresh }: SuperAdminOverviewProps) => {
+export const SuperAdminOverview = ({ 
+  users, 
+  stores, 
+  products, 
+  orders, 
+  disputes,
+  platformBalance, 
+  platformSettings, 
+  onRefresh 
+}: SuperAdminOverviewProps) => {
+  // Calculate stats from raw data
+  const totalUsers = users.length;
+  const totalSellers = users.filter(u => u.role === 'seller').length;
+  const totalBuyers = users.filter(u => u.role === 'buyer').length;
+  const pendingSellers = users.filter(u => u.role === 'seller' && u.seller_status === 'pending').length;
+  const approvedSellers = users.filter(u => u.role === 'seller' && u.seller_status === 'approved').length;
+  const suspendedSellers = stores.filter(s => s.is_suspended).length;
+  const totalProducts = products.length;
+  const activeProducts = products.filter(p => p.is_active).length;
+  const totalOrders = orders.length;
+  const pendingOrders = orders.filter(o => o.status === 'pending').length;
+  const totalDisputes = disputes.length;
+  const pendingDisputes = disputes.filter(d => d.status === 'pending').length;
+  const commissionRate = platformSettings.commission_rate;
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -122,9 +168,9 @@ export const SuperAdminOverview = ({ stats, platformBalance, commissionRate, onR
       </div>
 
       {/* Quick Actions - Alerts */}
-      {(stats.pendingSellers > 0 || stats.pendingDisputes > 0) && (
+      {(pendingSellers > 0 || pendingDisputes > 0) && (
         <div className="grid gap-4 md:grid-cols-2">
-          {stats.pendingSellers > 0 && (
+          {pendingSellers > 0 && (
             <Link to="/admin/users">
               <Card className="border-yellow-500/50 bg-yellow-500/5 hover:bg-yellow-500/10 transition-colors cursor-pointer">
                 <CardContent className="flex items-center gap-4 p-4">
@@ -132,7 +178,7 @@ export const SuperAdminOverview = ({ stats, platformBalance, commissionRate, onR
                     <AlertCircle className="w-6 h-6 text-yellow-600" />
                   </div>
                   <div>
-                    <p className="font-semibold text-yellow-700">{stats.pendingSellers} Pending Seller Applications</p>
+                    <p className="font-semibold text-yellow-700">{pendingSellers} Pending Seller Applications</p>
                     <p className="text-sm text-muted-foreground">Review and approve sellers</p>
                   </div>
                 </CardContent>
@@ -140,7 +186,7 @@ export const SuperAdminOverview = ({ stats, platformBalance, commissionRate, onR
             </Link>
           )}
           
-          {stats.pendingDisputes > 0 && (
+          {pendingDisputes > 0 && (
             <Link to="/admin/disputes">
               <Card className="border-red-500/50 bg-red-500/5 hover:bg-red-500/10 transition-colors cursor-pointer">
                 <CardContent className="flex items-center gap-4 p-4">
@@ -148,7 +194,7 @@ export const SuperAdminOverview = ({ stats, platformBalance, commissionRate, onR
                     <Scale className="w-6 h-6 text-red-600" />
                   </div>
                   <div>
-                    <p className="font-semibold text-red-700">{stats.pendingDisputes} Open Disputes</p>
+                    <p className="font-semibold text-red-700">{pendingDisputes} Open Disputes</p>
                     <p className="text-sm text-muted-foreground">Requires your attention</p>
                   </div>
                 </CardContent>
@@ -166,10 +212,10 @@ export const SuperAdminOverview = ({ stats, platformBalance, commissionRate, onR
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalUsers}</div>
+            <div className="text-2xl font-bold">{totalUsers}</div>
             <div className="flex gap-2 mt-1">
-              <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full">{stats.totalBuyers} buyers</span>
-              <span className="text-xs px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full">{stats.totalSellers} sellers</span>
+              <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full">{totalBuyers} buyers</span>
+              <span className="text-xs px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full">{totalSellers} sellers</span>
             </div>
           </CardContent>
         </Card>
@@ -180,11 +226,11 @@ export const SuperAdminOverview = ({ stats, platformBalance, commissionRate, onR
             <UserCheck className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalSellers}</div>
+            <div className="text-2xl font-bold">{totalSellers}</div>
             <div className="flex flex-wrap gap-1 mt-1">
-              <span className="text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded-full">{stats.approvedSellers} approved</span>
-              <span className="text-xs px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded-full">{stats.pendingSellers} pending</span>
-              <span className="text-xs px-2 py-0.5 bg-red-100 text-red-700 rounded-full">{stats.suspendedSellers} suspended</span>
+              <span className="text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded-full">{approvedSellers} approved</span>
+              <span className="text-xs px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded-full">{pendingSellers} pending</span>
+              <span className="text-xs px-2 py-0.5 bg-red-100 text-red-700 rounded-full">{suspendedSellers} suspended</span>
             </div>
           </CardContent>
         </Card>
@@ -195,8 +241,8 @@ export const SuperAdminOverview = ({ stats, platformBalance, commissionRate, onR
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalProducts}</div>
-            <p className="text-xs text-muted-foreground">{stats.activeProducts} active listings</p>
+            <div className="text-2xl font-bold">{totalProducts}</div>
+            <p className="text-xs text-muted-foreground">{activeProducts} active listings</p>
           </CardContent>
         </Card>
 
@@ -206,8 +252,8 @@ export const SuperAdminOverview = ({ stats, platformBalance, commissionRate, onR
             <ShoppingCart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalOrders}</div>
-            <p className="text-xs text-muted-foreground">{stats.pendingOrders} pending orders</p>
+            <div className="text-2xl font-bold">{totalOrders}</div>
+            <p className="text-xs text-muted-foreground">{pendingOrders} pending orders</p>
           </CardContent>
         </Card>
       </div>
@@ -220,8 +266,8 @@ export const SuperAdminOverview = ({ stats, platformBalance, commissionRate, onR
             <AlertTriangle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalDisputes}</div>
-            <p className="text-xs text-muted-foreground">{stats.pendingDisputes} requiring action</p>
+            <div className="text-2xl font-bold">{totalDisputes}</div>
+            <p className="text-xs text-muted-foreground">{pendingDisputes} requiring action</p>
           </CardContent>
         </Card>
 
@@ -231,7 +277,7 @@ export const SuperAdminOverview = ({ stats, platformBalance, commissionRate, onR
             <UserX className="h-4 w-4 text-destructive" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-destructive">{stats.suspendedSellers}</div>
+            <div className="text-2xl font-bold text-destructive">{suspendedSellers}</div>
             <p className="text-xs text-muted-foreground">Stores currently suspended</p>
           </CardContent>
         </Card>
