@@ -10,6 +10,7 @@ import Marketplace from "./pages/Marketplace";
 import Seller from "./pages/Seller";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import AdminLogin from "./pages/AdminLogin";
 import Dashboard from "./pages/Dashboard";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
@@ -50,6 +51,8 @@ const App = () => (
               <Route path="/orders" element={<Orders />} />
               <Route path="/order-confirmation" element={<OrderConfirmation />} />
               <Route path="/about" element={<About />} />
+              {/* Admin Login Route */}
+              <Route path="/admin-login" element={<AdminLogin />} />
               {/* Super Admin Routes */}
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/admin/users" element={<AdminUsers />} />
