@@ -1,6 +1,8 @@
 import { Button } from "@/components/ui/button";
-import { Heart, Package, ShoppingCart, Loader2 } from "lucide-react";
+import { Heart, Package, ShoppingCart } from "lucide-react";
 import { useState } from "react";
+import LazyImage from "@/components/ui/lazy-image";
+import ButtonLoader from "@/components/loading/ButtonLoader";
 
 interface Product {
   id: string;
@@ -34,15 +36,16 @@ const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
   return (
     <div className="bg-card rounded-2xl overflow-hidden border hover:border-primary/30 transition-all duration-300 group">
       {/* Image */}
-      <div className="relative aspect-square overflow-hidden bg-muted">
+      <div className="relative aspect-square overflow-hidden">
         {product.image_url ? (
-          <img
+          <LazyImage
             src={product.image_url}
             alt={product.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            aspectRatio="square"
+            className="w-full h-full group-hover:scale-105 transition-transform duration-500"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center">
+          <div className="w-full h-full flex items-center justify-center bg-muted">
             <Package className="w-12 h-12 text-muted-foreground" />
           </div>
         )}
@@ -109,7 +112,7 @@ const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
           disabled={loading || product.stock === 0}
         >
           {loading ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
+            <ButtonLoader variant="dots" size="sm" />
           ) : (
             <>
               <ShoppingCart className="w-4 h-4 mr-2" />
