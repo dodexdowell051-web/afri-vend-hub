@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import ProductFilters from "@/components/marketplace/ProductFilters";
 import ProductCard from "@/components/marketplace/ProductCard";
+import { ProductCardSkeleton } from "@/components/loading/ShimmerSkeleton";
 
 const categories = [
   "All", "Fashion", "Electronics", "Home & Garden", "Beauty", "Food & Beverages", "Sports", "Crafts", "Other"
@@ -147,15 +148,7 @@ const Marketplace = () => {
           {loading ? (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {[...Array(8)].map((_, i) => (
-                <div key={i} className="bg-card rounded-2xl overflow-hidden animate-pulse">
-                  <div className="aspect-square bg-muted" />
-                  <div className="p-4 space-y-3">
-                    <div className="h-3 bg-muted rounded w-1/3" />
-                    <div className="h-4 bg-muted rounded w-2/3" />
-                    <div className="h-3 bg-muted rounded w-full" />
-                    <div className="h-10 bg-muted rounded w-full" />
-                  </div>
-                </div>
+                <ProductCardSkeleton key={i} />
               ))}
             </div>
           ) : filteredProducts.length === 0 ? (

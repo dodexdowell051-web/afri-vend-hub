@@ -5,31 +5,57 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { CartProvider } from "@/contexts/CartContext";
-import Index from "./pages/Index";
-import Marketplace from "./pages/Marketplace";
-import Seller from "./pages/Seller";
-import Login from "./pages/Login";
-import Signup from "./pages/Signup";
-import AdminLogin from "./pages/AdminLogin";
-import Dashboard from "./pages/Dashboard";
-import Cart from "./pages/Cart";
-import Checkout from "./pages/Checkout";
-import Orders from "./pages/Orders";
-import OrderConfirmation from "./pages/OrderConfirmation";
-import About from "./pages/About";
-import NotFound from "./pages/NotFound";
-import AdminDashboard from "./pages/admin/AdminDashboard";
-import AdminUsers from "./pages/admin/AdminUsers";
-import AdminProducts from "./pages/admin/AdminProducts";
-import AdminOrders from "./pages/admin/AdminOrders";
-import AdminPayouts from "./pages/admin/AdminPayouts";
-import AdminSettings from "./pages/admin/AdminSettings";
-import AdminDisputes from "./pages/admin/AdminDisputes";
-import AdminRefunds from "./pages/admin/AdminRefunds";
-import AdminAuditLogs from "./pages/admin/AdminAuditLogs";
-import AdminWallets from "./pages/admin/AdminWallets";
+import { Suspense, lazy } from "react";
+import PageLoader from "@/components/loading/PageLoader";
+import { RoutePrefetcher } from "@/components/loading/LazyRoute";
 
-const queryClient = new QueryClient();
+// Eagerly load critical above-the-fold pages
+import Index from "./pages/Index";
+import Login from "./pages/Login";
+
+// Lazy load all other pages for code splitting
+const Marketplace = lazy(() => import("./pages/Marketplace"));
+const Seller = lazy(() => import("./pages/Seller"));
+const Signup = lazy(() => import("./pages/Signup"));
+const AdminLogin = lazy(() => import("./pages/AdminLogin"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Cart = lazy(() => import("./pages/Cart"));
+const Checkout = lazy(() => import("./pages/Checkout"));
+const Orders = lazy(() => import("./pages/Orders"));
+const OrderConfirmation = lazy(() => import("./pages/OrderConfirmation"));
+const About = lazy(() => import("./pages/About"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+
+// Lazy load admin pages (grouped chunk)
+const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
+const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"));
+const AdminProducts = lazy(() => import("./pages/admin/AdminProducts"));
+const AdminOrders = lazy(() => import("./pages/admin/AdminOrders"));
+const AdminPayouts = lazy(() => import("./pages/admin/AdminPayouts"));
+const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
+const AdminDisputes = lazy(() => import("./pages/admin/AdminDisputes"));
+const AdminRefunds = lazy(() => import("./pages/admin/AdminRefunds"));
+const AdminAuditLogs = lazy(() => import("./pages/admin/AdminAuditLogs"));
+const AdminWallets = lazy(() => import("./pages/admin/AdminWallets"));
+
+// Configure React Query with caching
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      gcTime: 1000 * 60 * 30, // 30 minutes (formerly cacheTime)
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
+
+// Wrapper for lazy routes
+const LazyPage = ({ children }: { children: React.ReactNode }) => (
+  <Suspense fallback={<PageLoader message="Loading page..." />}>
+    {children}
+  </Suspense>
+);
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -39,33 +65,38 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <CartProvider>
+            <RoutePrefetcher />
             <Routes>
+              {/* Critical routes - eagerly loaded */}
               <Route path="/" element={<Index />} />
-              <Route path="/marketplace" element={<Marketplace />} />
-              <Route path="/seller" element={<Seller />} />
               <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/cart" element={<Cart />} />
-              <Route path="/checkout" element={<Checkout />} />
-              <Route path="/orders" element={<Orders />} />
-              <Route path="/order-confirmation" element={<OrderConfirmation />} />
-              <Route path="/about" element={<About />} />
-              {/* Admin Login Route */}
-              <Route path="/admin-login" element={<AdminLogin />} />
-              {/* Super Admin Routes */}
-              <Route path="/admin" element={<AdminDashboard />} />
-              <Route path="/admin/users" element={<AdminUsers />} />
-              <Route path="/admin/products" element={<AdminProducts />} />
-              <Route path="/admin/orders" element={<AdminOrders />} />
-              <Route path="/admin/wallets" element={<AdminWallets />} />
-              <Route path="/admin/payouts" element={<AdminPayouts />} />
-              <Route path="/admin/disputes" element={<AdminDisputes />} />
-              <Route path="/admin/refunds" element={<AdminRefunds />} />
-              <Route path="/admin/audit-logs" element={<AdminAuditLogs />} />
-              <Route path="/admin/settings" element={<AdminSettings />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
+              
+              {/* Lazy loaded routes */}
+              <Route path="/marketplace" element={<LazyPage><Marketplace /></LazyPage>} />
+              <Route path="/seller" element={<LazyPage><Seller /></LazyPage>} />
+              <Route path="/signup" element={<LazyPage><Signup /></LazyPage>} />
+              <Route path="/dashboard" element={<LazyPage><Dashboard /></LazyPage>} />
+              <Route path="/cart" element={<LazyPage><Cart /></LazyPage>} />
+              <Route path="/checkout" element={<LazyPage><Checkout /></LazyPage>} />
+              <Route path="/orders" element={<LazyPage><Orders /></LazyPage>} />
+              <Route path="/order-confirmation" element={<LazyPage><OrderConfirmation /></LazyPage>} />
+              <Route path="/about" element={<LazyPage><About /></LazyPage>} />
+              
+              {/* Admin Routes - Lazy loaded */}
+              <Route path="/admin-login" element={<LazyPage><AdminLogin /></LazyPage>} />
+              <Route path="/admin" element={<LazyPage><AdminDashboard /></LazyPage>} />
+              <Route path="/admin/users" element={<LazyPage><AdminUsers /></LazyPage>} />
+              <Route path="/admin/products" element={<LazyPage><AdminProducts /></LazyPage>} />
+              <Route path="/admin/orders" element={<LazyPage><AdminOrders /></LazyPage>} />
+              <Route path="/admin/wallets" element={<LazyPage><AdminWallets /></LazyPage>} />
+              <Route path="/admin/payouts" element={<LazyPage><AdminPayouts /></LazyPage>} />
+              <Route path="/admin/disputes" element={<LazyPage><AdminDisputes /></LazyPage>} />
+              <Route path="/admin/refunds" element={<LazyPage><AdminRefunds /></LazyPage>} />
+              <Route path="/admin/audit-logs" element={<LazyPage><AdminAuditLogs /></LazyPage>} />
+              <Route path="/admin/settings" element={<LazyPage><AdminSettings /></LazyPage>} />
+              
+              {/* Catch-all */}
+              <Route path="*" element={<LazyPage><NotFound /></LazyPage>} />
             </Routes>
           </CartProvider>
         </AuthProvider>
