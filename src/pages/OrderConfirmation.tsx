@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 interface OrderDetails {
   id: string;
   status: string;
+  payment_status?: string;
   total: number;
   created_at: string;
   store: { name: string };
@@ -38,16 +39,32 @@ const OrderConfirmation = () => {
         return;
       }
 
-      // Verify payment if reference exists
-      if (reference || trxref) {
+      const paymentRef = reference || trxref;
+      let verificationSuccess = false;
+
+      // Verify payment if reference exists - WAIT for completion
+      if (paymentRef) {
         try {
-          const { data } = await supabase.functions.invoke("verify-payment", {
+          console.log("Verifying payment with reference:", paymentRef);
+          const { data, error } = await supabase.functions.invoke("verify-payment", {
             body: {
-              reference: reference || trxref,
+              reference: paymentRef,
               orderId,
             },
           });
-          setVerified(data?.success || false);
+          
+          if (error) {
+            console.error("Verification function error:", error);
+          } else {
+            console.log("Verification response:", data);
+            verificationSuccess = data?.success || false;
+            setVerified(verificationSuccess);
+          }
+          
+          // Small delay to ensure database updates have propagated
+          if (verificationSuccess) {
+            await new Promise(resolve => setTimeout(resolve, 500));
+          }
         } catch (error) {
           console.error("Verification error:", error);
         }
@@ -55,27 +72,48 @@ const OrderConfirmation = () => {
         setVerified(true);
       }
 
-      // Fetch order details
-      const { data: orderData, error } = await supabase
-        .from("orders")
-        .select(`
-          id,
-          status,
-          total,
-          created_at,
-          store:stores (name),
-          order_items (
-            id,
-            quantity,
-            price,
-            product:products (name, image_url)
-          )
-        `)
-        .eq("id", orderId)
-        .single();
+      // Fetch order details AFTER verification completes
+      const fetchOrderWithRetry = async (attempts = 3): Promise<OrderDetails | null> => {
+        for (let i = 0; i < attempts; i++) {
+          const { data: orderData, error } = await supabase
+            .from("orders")
+            .select(`
+              id,
+              status,
+              payment_status,
+              total,
+              created_at,
+              store:stores (name),
+              order_items (
+                id,
+                quantity,
+                price,
+                product:products (name, image_url)
+              )
+            `)
+            .eq("id", orderId)
+            .single();
 
-      if (!error && orderData) {
-        setOrder(orderData as unknown as OrderDetails);
+          if (!error && orderData) {
+            // If payment was verified but status still pending, wait and retry
+            if (verificationSuccess && orderData.payment_status === "pending" && i < attempts - 1) {
+              console.log(`Order still pending, retrying in 1s (attempt ${i + 1}/${attempts})`);
+              await new Promise(resolve => setTimeout(resolve, 1000));
+              continue;
+            }
+            return orderData as unknown as OrderDetails;
+          }
+          
+          if (i < attempts - 1) {
+            await new Promise(resolve => setTimeout(resolve, 500));
+          }
+        }
+        return null;
+      };
+
+      const orderData = await fetchOrderWithRetry();
+      if (orderData) {
+        setOrder(orderData);
       }
 
       setLoading(false);
@@ -158,9 +196,15 @@ const OrderConfirmation = () => {
 
               <div className="bg-accent/20 rounded-lg p-4 mb-4">
                 <div className="flex items-center gap-2 text-sm">
-                  <div className="w-2 h-2 rounded-full bg-secondary animate-pulse" />
-                  <span className="font-medium capitalize">{order.status}</span>
-                  <span className="text-muted-foreground">- We're preparing your order</span>
+                  <div className={`w-2 h-2 rounded-full ${order.payment_status === 'paid' ? 'bg-green-500' : 'bg-secondary'} animate-pulse`} />
+                  <span className="font-medium capitalize">
+                    {order.payment_status === 'paid' ? 'Payment Confirmed' : order.status}
+                  </span>
+                  <span className="text-muted-foreground">
+                    {order.payment_status === 'paid' 
+                      ? "- We're preparing your order" 
+                      : '- Confirming payment...'}
+                  </span>
                 </div>
               </div>
 
