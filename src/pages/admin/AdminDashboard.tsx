@@ -18,7 +18,8 @@ const AdminDashboard = () => {
     wallets, 
     payouts, 
     disputes, 
-    refunds, 
+    refunds,
+    financialTransactions, 
     platformBalance, 
     platformSettings,
     loading: dataLoading,
@@ -65,6 +66,7 @@ const AdminDashboard = () => {
               payouts={payouts}
               disputes={disputes}
               refunds={refunds}
+              financialTransactions={financialTransactions}
               platformBalance={platformBalance}
               platformSettings={platformSettings}
               onRefresh={refreshData}

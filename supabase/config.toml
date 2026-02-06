@@ -11,3 +11,9 @@ verify_jwt = false
 
 [functions.update-order-status]
 verify_jwt = false
+
+[functions.confirm-delivery]
+verify_jwt = false
+
+[functions.admin-override-confirmation]
+verify_jwt = false

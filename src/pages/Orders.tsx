@@ -3,11 +3,23 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Package, ShoppingBag, Clock, CheckCircle, Truck, XCircle, CreditCard } from "lucide-react";
+import { Package, ShoppingBag, Clock, CheckCircle, Truck, XCircle, CreditCard, Loader2, CheckCheck } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface OrderItem {
   id: string;
@@ -29,6 +41,7 @@ interface Order {
   delivered_at: string | null;
   customer_name: string | null;
   delivery_address: string | null;
+  seller_earning: number | null;
   store: {
     name: string;
   };
@@ -56,6 +69,11 @@ const statusConfig: Record<string, { label: string; icon: React.ComponentType<{ 
     icon: CheckCircle, 
     className: "bg-primary/10 text-primary border-primary/20" 
   },
+  completed: { 
+    label: "Completed", 
+    icon: CheckCheck, 
+    className: "bg-green-100 text-green-700 border-green-200" 
+  },
   cancelled: { 
     label: "Cancelled", 
     icon: XCircle, 
@@ -73,6 +91,7 @@ const Orders = () => {
   const { user } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [confirmingOrderId, setConfirmingOrderId] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -96,6 +115,7 @@ const Orders = () => {
         delivered_at,
         customer_name,
         delivery_address,
+        seller_earning,
         store:stores (name),
         order_items (
           id,
@@ -119,6 +139,42 @@ const Orders = () => {
 
   const getPaymentStatusConfig = (status: string) => {
     return paymentStatusConfig[status] || paymentStatusConfig.pending;
+  };
+
+  const canConfirmDelivery = (order: Order) => {
+    // Only enable for shipped or delivered status (not completed)
+    const isShippedOrDelivered = order.status === "shipped" || order.status === "delivered";
+    const isPaid = order.payment_status === "paid";
+    const isNotCompleted = !["completed", "cancelled"].includes(order.status);
+    return isShippedOrDelivered && isPaid && isNotCompleted;
+  };
+
+  const handleConfirmDelivery = async (orderId: string) => {
+    setConfirmingOrderId(orderId);
+    try {
+      const { data, error } = await supabase.functions.invoke("confirm-delivery", {
+        body: { orderId },
+      });
+
+      if (error) {
+        console.error("Confirm delivery error:", error);
+        toast.error(error.message || "Failed to confirm delivery");
+        return;
+      }
+
+      if (data?.error) {
+        toast.error(data.error);
+        return;
+      }
+
+      toast.success("Delivery confirmed! Funds have been released to the seller.");
+      await fetchOrders(); // Refresh orders
+    } catch (error) {
+      console.error("Confirm delivery error:", error);
+      toast.error("Failed to confirm delivery. Please try again.");
+    } finally {
+      setConfirmingOrderId(null);
+    }
   };
 
   if (!user) {
@@ -258,10 +314,76 @@ const Orders = () => {
                         <span className="text-xl font-bold text-primary">₦{order.total.toLocaleString()}</span>
                       </div>
 
-                      {order.delivered_at && (
+                      {order.delivered_at && order.status === "completed" && (
                         <p className="text-xs text-muted-foreground text-right mt-2">
-                          Delivered on {new Date(order.delivered_at).toLocaleDateString()}
+                          Completed on {new Date(order.delivered_at).toLocaleDateString()}
                         </p>
+                      )}
+
+                      {/* Confirm Delivery Button */}
+                      {canConfirmDelivery(order) && (
+                        <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                            <div>
+                              <p className="font-medium text-green-800">Received your order?</p>
+                              <p className="text-sm text-green-600">
+                                Confirm delivery to release ₦{(order.seller_earning || 0).toLocaleString()} to the seller
+                              </p>
+                            </div>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button 
+                                  className="bg-green-600 hover:bg-green-700 text-white gap-2"
+                                  disabled={confirmingOrderId === order.id}
+                                >
+                                  {confirmingOrderId === order.id ? (
+                                    <>
+                                      <Loader2 className="w-4 h-4 animate-spin" />
+                                      Confirming...
+                                    </>
+                                  ) : (
+                                    <>
+                                      <CheckCheck className="w-4 h-4" />
+                                      Confirm Delivery
+                                    </>
+                                  )}
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Confirm Order Delivery</AlertDialogTitle>
+                                  <AlertDialogDescription className="space-y-2">
+                                    <p>By confirming delivery, you acknowledge that:</p>
+                                    <ul className="list-disc list-inside space-y-1 text-sm">
+                                      <li>You have received the order in satisfactory condition</li>
+                                      <li>₦{(order.seller_earning || 0).toLocaleString()} will be released to the seller</li>
+                                      <li>This action cannot be undone without admin intervention</li>
+                                    </ul>
+                                    <p className="font-medium mt-3">Are you sure you want to continue?</p>
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction 
+                                    onClick={() => handleConfirmDelivery(order.id)}
+                                    className="bg-green-600 hover:bg-green-700"
+                                  >
+                                    Yes, Confirm Delivery
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
+                        </div>
+                      )}
+
+                      {order.status === "completed" && (
+                        <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                          <div className="flex items-center gap-2 text-green-700">
+                            <CheckCheck className="w-5 h-5" />
+                            <span className="font-medium">Order Completed - Funds released to seller</span>
+                          </div>
+                        </div>
                       )}
                     </CardContent>
                   </Card>
