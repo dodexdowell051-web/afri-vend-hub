@@ -104,6 +104,20 @@ interface AuditLog {
   user_email?: string;
 }
 
+interface FinancialTransaction {
+  id: string;
+  order_id: string | null;
+  payout_id: string | null;
+  wallet_id: string | null;
+  user_id: string | null;
+  amount: number;
+  type: string;
+  description: string | null;
+  metadata: Record<string, unknown> | null;
+  created_at: string | null;
+  user_email?: string;
+}
+
 interface PlatformBalance {
   total_revenue: number;
   total_commissions: number;
@@ -150,6 +164,7 @@ export const useSuperAdminDashboard = () => {
   const [disputes, setDisputes] = useState<Dispute[]>([]);
   const [refunds, setRefunds] = useState<Refund[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
+  const [financialTransactions, setFinancialTransactions] = useState<FinancialTransaction[]>([]);
   const [stores, setStores] = useState<Store[]>([]);
   const [platformBalance, setPlatformBalance] = useState<PlatformBalance | null>(null);
   const [platformSettings, setPlatformSettings] = useState<PlatformSettings>({
@@ -191,7 +206,8 @@ export const useSuperAdminDashboard = () => {
         refundsRes,
         auditLogsRes,
         balanceRes,
-        settingsRes
+        settingsRes,
+        financialTxRes
       ] = await Promise.all([
         supabase.from("profiles").select("*").order("created_at", { ascending: false }),
         supabase.from("stores").select("id, name, user_id, is_suspended"),
@@ -203,7 +219,8 @@ export const useSuperAdminDashboard = () => {
         supabase.from("refunds").select("*").order("created_at", { ascending: false }),
         supabase.from("audit_logs").select("*").order("created_at", { ascending: false }).limit(100),
         supabase.from("platform_balance").select("*").maybeSingle(),
-        supabase.from("platform_settings").select("*")
+        supabase.from("platform_settings").select("*"),
+        supabase.from("financial_transactions").select("*").order("created_at", { ascending: false }).limit(200)
       ]);
 
       const usersData = usersRes.data || [];
@@ -215,6 +232,7 @@ export const useSuperAdminDashboard = () => {
       const disputesData = disputesRes.data || [];
       const refundsData = refundsRes.data || [];
       const auditLogsData = auditLogsRes.data || [];
+      const financialTxData = financialTxRes.data || [];
 
       // Create maps for lookups
       const userMap = new Map(usersData.map(u => [u.id, u]));
@@ -278,6 +296,16 @@ export const useSuperAdminDashboard = () => {
         };
       });
 
+      // Transform financial transactions
+      const transformedFinancialTx = financialTxData.map(tx => {
+        const user = tx.user_id ? userMap.get(tx.user_id) : null;
+        return {
+          ...tx,
+          metadata: tx.metadata as Record<string, unknown> | null,
+          user_email: user?.email || "System"
+        };
+      });
+
       // Parse settings
       const settings: PlatformSettings = {
         commission_rate: "10",
@@ -305,6 +333,7 @@ export const useSuperAdminDashboard = () => {
       setDisputes(transformedDisputes);
       setRefunds(refundsData);
       setAuditLogs(transformedAuditLogs);
+      setFinancialTransactions(transformedFinancialTx);
       setStores(storesData);
       setPlatformBalance(balanceRes.data as PlatformBalance | null);
       setPlatformSettings(settings);
@@ -656,6 +685,7 @@ export const useSuperAdminDashboard = () => {
     disputes,
     refunds,
     auditLogs,
+    financialTransactions,
     stores,
     platformBalance,
     platformSettings,

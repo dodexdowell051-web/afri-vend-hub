@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Users, 
   Package, 
@@ -13,9 +14,12 @@ import {
   UserCheck,
   UserX,
   AlertTriangle,
-  Scale
+  Scale,
+  BarChart3
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { FinancialSummary } from "./FinancialSummary";
+import { TransactionHistory } from "./TransactionHistory";
 
 interface User {
   id: string;
@@ -39,6 +43,31 @@ interface Dispute {
   status: string;
 }
 
+interface SellerWallet {
+  id: string;
+  user_id: string;
+  balance: number;
+  total_earnings: number;
+  is_locked?: boolean;
+  lock_reason?: string | null;
+  seller_name?: string;
+  seller_email?: string;
+}
+
+interface FinancialTransaction {
+  id: string;
+  order_id: string | null;
+  payout_id: string | null;
+  wallet_id: string | null;
+  user_id: string | null;
+  amount: number;
+  type: string;
+  description: string | null;
+  metadata: Record<string, unknown> | null;
+  created_at: string | null;
+  user_email?: string;
+}
+
 interface PlatformBalance {
   total_revenue: number;
   total_commissions: number;
@@ -59,10 +88,11 @@ interface SuperAdminOverviewProps {
   stores: Store[];
   products: Product[];
   orders: Order[];
-  wallets: unknown[];
+  wallets: SellerWallet[];
   payouts: unknown[];
   disputes: Dispute[];
   refunds: unknown[];
+  financialTransactions: FinancialTransaction[];
   platformBalance: PlatformBalance | null;
   platformSettings: PlatformSettings;
   onRefresh: () => void;
@@ -81,7 +111,9 @@ export const SuperAdminOverview = ({
   stores, 
   products, 
   orders, 
+  wallets,
   disputes,
+  financialTransactions,
   platformBalance, 
   platformSettings, 
   onRefresh 
@@ -102,7 +134,37 @@ export const SuperAdminOverview = ({
   const commissionRate = platformSettings.commission_rate;
 
   return (
-    <div className="space-y-6">
+    <Tabs defaultValue="overview" className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-lg">
+            <Crown className="w-7 h-7 text-primary-foreground" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold">Super Admin Dashboard</h2>
+            <p className="text-muted-foreground">Complete platform control & oversight</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <TabsList>
+            <TabsTrigger value="overview" className="gap-2">
+              <BarChart3 className="w-4 h-4" />
+              Overview
+            </TabsTrigger>
+            <TabsTrigger value="financial" className="gap-2">
+              <DollarSign className="w-4 h-4" />
+              Financial
+            </TabsTrigger>
+          </TabsList>
+          <Button variant="outline" onClick={onRefresh} className="gap-2">
+            <RefreshCw className="w-4 h-4" />
+            Refresh
+          </Button>
+        </div>
+      </div>
+
+      <TabsContent value="overview" className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -293,6 +355,20 @@ export const SuperAdminOverview = ({
           </CardContent>
         </Card>
       </div>
-    </div>
+      </TabsContent>
+
+      {/* Financial Tab */}
+      <TabsContent value="financial" className="space-y-6">
+        <FinancialSummary 
+          platformBalance={platformBalance}
+          wallets={wallets}
+          commissionRate={commissionRate}
+        />
+        <TransactionHistory 
+          transactions={financialTransactions}
+          onRefresh={onRefresh}
+        />
+      </TabsContent>
+    </Tabs>
   );
 };
