@@ -25,6 +25,7 @@ const Orders = lazy(() => import("./pages/Orders"));
 const OrderConfirmation = lazy(() => import("./pages/OrderConfirmation"));
 const About = lazy(() => import("./pages/About"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const StorePage = lazy(() => import("./pages/StorePage"));
 
 // Lazy load admin pages (grouped chunk)
 const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
@@ -81,6 +82,7 @@ const App = () => (
               <Route path="/orders" element={<LazyPage><Orders /></LazyPage>} />
               <Route path="/order-confirmation" element={<LazyPage><OrderConfirmation /></LazyPage>} />
               <Route path="/about" element={<LazyPage><About /></LazyPage>} />
+              <Route path="/store/:storeId" element={<LazyPage><StorePage /></LazyPage>} />
               
               {/* Admin Routes - Lazy loaded */}
               <Route path="/admin-login" element={<LazyPage><AdminLogin /></LazyPage>} />

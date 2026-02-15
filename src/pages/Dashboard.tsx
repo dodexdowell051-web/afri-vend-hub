@@ -3,8 +3,10 @@ import { useNavigate } from "react-router-dom";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Package, ShoppingCart, Wallet, TrendingUp, Store } from "lucide-react";
+import { Package, ShoppingCart, Wallet, TrendingUp, Store, Share2, Copy, Check } from "lucide-react";
+import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProducts } from "@/hooks/useProducts";
 import { useSellerDashboard } from "@/hooks/useSellerDashboard";
@@ -14,7 +16,10 @@ import { StoreSettingsDialog } from "@/components/seller/StoreSettingsDialog";
 import SellerOrdersTable from "@/components/seller/SellerOrdersTable";
 import WalletCard from "@/components/seller/WalletCard";
 
+import { toast } from "sonner";
+
 const Dashboard = () => {
+  const [linkCopied, setLinkCopied] = useState(false);
   const navigate = useNavigate();
   const { user, profile, store, loading } = useAuth();
   const { products, loading: productsLoading, fetchProducts } = useProducts();
@@ -58,7 +63,27 @@ const Dashboard = () => {
                   <p className="text-muted-foreground">Welcome back, {profile.first_name}!</p>
                 </div>
               </div>
-              <StoreSettingsDialog />
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2"
+                  onClick={() => {
+                    const storeLink = `${window.location.origin}/store/${store.id}`;
+                    navigator.clipboard.writeText(storeLink);
+                    setLinkCopied(true);
+                    toast.success("Store link copied! Share it with your customers.");
+                    setTimeout(() => setLinkCopied(false), 2000);
+                  }}
+                >
+                  {linkCopied ? (
+                    <><Check className="w-4 h-4" /> Copied!</>
+                  ) : (
+                    <><Share2 className="w-4 h-4" /> Share Store Link</>
+                  )}
+                </Button>
+                <StoreSettingsDialog />
+              </div>
             </div>
           </div>
 
