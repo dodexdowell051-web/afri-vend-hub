@@ -3,7 +3,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Package, ShoppingBag, Clock, CheckCircle, Truck, XCircle, CreditCard, Loader2, CheckCheck } from "lucide-react";
+import { Package, ShoppingBag, Clock, CheckCircle, Truck, XCircle, CreditCard, Loader2, CheckCheck, Timer } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
@@ -37,6 +37,7 @@ interface Order {
   payment_status: string;
   total: number;
   created_at: string;
+  updated_at: string | null;
   paid_at: string | null;
   delivered_at: string | null;
   customer_name: string | null;
@@ -111,6 +112,7 @@ const Orders = () => {
         payment_status,
         total,
         created_at,
+        updated_at,
         paid_at,
         delivered_at,
         customer_name,
@@ -141,12 +143,25 @@ const Orders = () => {
     return paymentStatusConfig[status] || paymentStatusConfig.pending;
   };
 
+  const AUTO_RELEASE_DAYS = 7;
+
   const canConfirmDelivery = (order: Order) => {
-    // Only enable for shipped or delivered status (not completed)
     const isShippedOrDelivered = order.status === "shipped" || order.status === "delivered";
     const isPaid = order.payment_status === "paid";
     const isNotCompleted = !["completed", "cancelled"].includes(order.status);
     return isShippedOrDelivered && isPaid && isNotCompleted;
+  };
+
+  const getAutoReleaseInfo = (order: Order) => {
+    // Calculate days remaining based on when order was shipped/delivered
+    const referenceDate = order.delivered_at || order.updated_at || order.created_at;
+    if (!referenceDate) return null;
+    const ref = new Date(referenceDate);
+    const releaseDate = new Date(ref.getTime() + AUTO_RELEASE_DAYS * 24 * 60 * 60 * 1000);
+    const now = new Date();
+    const msRemaining = releaseDate.getTime() - now.getTime();
+    const daysRemaining = Math.max(0, Math.ceil(msRemaining / (24 * 60 * 60 * 1000)));
+    return { daysRemaining, releaseDate };
   };
 
   const handleConfirmDelivery = async (orderId: string) => {
@@ -320,68 +335,86 @@ const Orders = () => {
                         </p>
                       )}
 
-                      {/* Confirm Delivery Button */}
-                      {canConfirmDelivery(order) && (
-                        <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-                          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                            <div>
-                              <p className="font-medium text-green-800">Received your order?</p>
-                              <p className="text-sm text-green-600">
-                                Confirm delivery to release ₦{(order.seller_earning || 0).toLocaleString()} to the seller
-                              </p>
-                            </div>
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button 
-                                  className="bg-green-600 hover:bg-green-700 text-white gap-2"
-                                  disabled={confirmingOrderId === order.id}
-                                >
-                                  {confirmingOrderId === order.id ? (
-                                    <>
-                                      <Loader2 className="w-4 h-4 animate-spin" />
-                                      Confirming...
-                                    </>
-                                  ) : (
-                                    <>
-                                      <CheckCheck className="w-4 h-4" />
-                                      Confirm Delivery
-                                    </>
-                                  )}
-                                </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>Confirm Order Delivery</AlertDialogTitle>
-                                  <AlertDialogDescription className="space-y-2">
-                                    <p>By confirming delivery, you acknowledge that:</p>
-                                    <ul className="list-disc list-inside space-y-1 text-sm">
-                                      <li>You have received the order in satisfactory condition</li>
-                                      <li>₦{(order.seller_earning || 0).toLocaleString()} will be released to the seller</li>
-                                      <li>This action cannot be undone without admin intervention</li>
-                                    </ul>
-                                    <p className="font-medium mt-3">Are you sure you want to continue?</p>
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                  <AlertDialogAction 
-                                    onClick={() => handleConfirmDelivery(order.id)}
-                                    className="bg-green-600 hover:bg-green-700"
+                      {/* Confirm Delivery Button with Countdown */}
+                      {canConfirmDelivery(order) && (() => {
+                        const autoRelease = getAutoReleaseInfo(order);
+                        return (
+                          <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                            {autoRelease && (
+                              <div className="flex items-center gap-2 mb-3 text-amber-700">
+                                <Timer className="w-4 h-4" />
+                                <span className="text-sm font-medium">
+                                  {autoRelease.daysRemaining > 0
+                                    ? `${autoRelease.daysRemaining} day${autoRelease.daysRemaining !== 1 ? "s" : ""} left to confirm — funds auto-release on ${autoRelease.releaseDate.toLocaleDateString()}`
+                                    : "Auto-release window has passed — funds will be released shortly"}
+                                </span>
+                              </div>
+                            )}
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                              <div>
+                                <p className="font-medium text-foreground">Received your order?</p>
+                                <p className="text-sm text-muted-foreground">
+                                  Confirm delivery to release ₦{(order.seller_earning || 0).toLocaleString()} to the seller
+                                </p>
+                              </div>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button 
+                                    className="bg-primary hover:bg-primary/90 text-primary-foreground gap-2"
+                                    disabled={confirmingOrderId === order.id}
                                   >
-                                    Yes, Confirm Delivery
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
+                                    {confirmingOrderId === order.id ? (
+                                      <>
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                        Confirming...
+                                      </>
+                                    ) : (
+                                      <>
+                                        <CheckCheck className="w-4 h-4" />
+                                        Confirm Delivery
+                                      </>
+                                    )}
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Confirm Order Delivery</AlertDialogTitle>
+                                    <AlertDialogDescription className="space-y-2">
+                                      <p>By confirming delivery, you acknowledge that:</p>
+                                      <ul className="list-disc list-inside space-y-1 text-sm">
+                                        <li>You have received the order in satisfactory condition</li>
+                                        <li>₦{(order.seller_earning || 0).toLocaleString()} will be released to the seller</li>
+                                        <li>This action cannot be undone without admin intervention</li>
+                                      </ul>
+                                      {autoRelease && autoRelease.daysRemaining > 0 && (
+                                        <p className="text-sm text-muted-foreground mt-2">
+                                          If you don't confirm, funds will auto-release in {autoRelease.daysRemaining} day{autoRelease.daysRemaining !== 1 ? "s" : ""}.
+                                        </p>
+                                      )}
+                                      <p className="font-medium mt-3">Are you sure you want to continue?</p>
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction 
+                                      onClick={() => handleConfirmDelivery(order.id)}
+                                      className="bg-primary hover:bg-primary/90"
+                                    >
+                                      Yes, Confirm Delivery
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        );
+                      })()}
 
                       {order.status === "completed" && (
-                        <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-                          <div className="flex items-center gap-2 text-green-700">
+                        <div className="mt-4 p-3 bg-primary/5 border border-primary/20 rounded-lg">
+                          <div className="flex items-center gap-2 text-primary">
                             <CheckCheck className="w-5 h-5" />
-                            <span className="font-medium">Order Completed - Funds released to seller</span>
+                            <span className="font-medium">Order Completed — Funds released to seller</span>
                           </div>
                         </div>
                       )}
