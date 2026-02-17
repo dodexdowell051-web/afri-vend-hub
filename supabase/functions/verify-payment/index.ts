@@ -100,6 +100,8 @@ serve(async (req: Request) => {
 
       // Update all orders with this reference
       const now = new Date().toISOString();
+      const notifications: Array<{user_id: string; title: string; message: string; type: string; link?: string}> = [];
+
       for (const order of orders || []) {
         const { error: updateError } = await supabase
           .from("orders")
@@ -114,6 +116,68 @@ serve(async (req: Request) => {
         if (updateError) {
           console.error("Error updating order:", updateError);
         }
+
+        // Get store owner for seller notification
+        const { data: store } = await supabase
+          .from("stores")
+          .select("user_id, name")
+          .eq("id", order.store_id)
+          .single();
+
+        if (store) {
+          notifications.push({
+            user_id: store.user_id,
+            title: "New Order Received!",
+            message: `You have a new paid order #${order.id.slice(0, 8).toUpperCase()} worth ₦${(order.seller_earning || 0).toLocaleString()}.`,
+            type: "order",
+            link: "/dashboard"
+          });
+        }
+      }
+
+      // Notify admins about new payment
+      const { data: adminRoles } = await supabase
+        .from("user_roles")
+        .select("user_id")
+        .eq("role", "admin");
+
+      (adminRoles || []).forEach((r: { user_id: string }) => {
+        notifications.push({
+          user_id: r.user_id,
+          title: "New Order Payment",
+          message: `Payment of ₦${(paymentData.amount / 100).toLocaleString()} confirmed via ${paymentData.channel || "Paystack"}.`,
+          type: "payment",
+          link: "/admin/orders"
+        });
+      });
+
+      // Update platform balance with incoming payment
+      const totalAmount = paymentData.amount / 100;
+      const { data: platformData } = await supabase
+        .from("platform_balance")
+        .select("*")
+        .maybeSingle();
+
+      if (platformData) {
+        await supabase
+          .from("platform_balance")
+          .update({
+            total_revenue: platformData.total_revenue + totalAmount,
+            updated_at: now
+          })
+          .eq("id", platformData.id);
+      } else {
+        await supabase.from("platform_balance").insert({
+          total_revenue: totalAmount,
+          total_commissions: 0,
+          pending_payouts: 0,
+          completed_payouts: 0
+        });
+      }
+
+      // Insert notifications
+      if (notifications.length > 0) {
+        await supabase.from("notifications").insert(notifications);
       }
 
       console.log("Payment verified successfully, orders updated to processing");

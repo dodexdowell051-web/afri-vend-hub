@@ -8,7 +8,7 @@ const corsHeaders = {
 
 interface UpdateStatusRequest {
   orderId: string;
-  status: "processing" | "shipped" | "delivered";
+  status: "processing" | "ready_to_ship" | "shipped" | "delivered";
 }
 
 serve(async (req: Request) => {
@@ -33,7 +33,7 @@ serve(async (req: Request) => {
       throw new Error("Missing required fields: orderId, status");
     }
 
-    const validStatuses = ["processing", "shipped", "delivered"];
+    const validStatuses = ["processing", "ready_to_ship", "shipped", "delivered"];
     if (!validStatuses.includes(status)) {
       throw new Error("Invalid status");
     }
@@ -76,7 +76,7 @@ serve(async (req: Request) => {
     }
 
     // Validate status transitions
-    const statusOrder = ["pending", "processing", "shipped", "delivered"];
+    const statusOrder = ["pending", "processing", "ready_to_ship", "shipped", "delivered"];
     const currentIndex = statusOrder.indexOf(order.status || "pending");
     const newIndex = statusOrder.indexOf(status);
 
@@ -95,87 +95,74 @@ serve(async (req: Request) => {
       updated_at: now,
     };
 
-    // If marking as delivered, credit seller wallet
+    // If marking as delivered, set delivered_at (NO wallet credit - escrow handles that)
     if (status === "delivered") {
       updateData.delivered_at = now;
+    }
 
-      // Get seller wallet
-      const { data: wallet, error: walletError } = await supabase
-        .from("seller_wallets")
-        .select("id, balance, total_earnings")
-        .eq("user_id", user.id)
-        .single();
+    // Insert notifications based on status
+    const notificationsToInsert: Array<{user_id: string; title: string; message: string; type: string; link?: string}> = [];
 
-      if (walletError || !wallet) {
-        console.error("Wallet not found, creating one...");
-        // Create wallet if doesn't exist
-        const { data: newWallet, error: createError } = await supabase
-          .from("seller_wallets")
-          .insert({
-            user_id: user.id,
-            balance: 0,
-            total_earnings: 0,
-          })
-          .select()
-          .single();
+    // Get buyer_id and order info for notifications
+    const { data: fullOrder } = await supabase
+      .from("orders")
+      .select("buyer_id, total, store_id")
+      .eq("id", orderId)
+      .single();
 
-        if (createError) {
-          throw new Error("Failed to create wallet");
-        }
+    // Get admin users for notifications
+    const { data: adminRoles } = await supabase
+      .from("user_roles")
+      .select("user_id")
+      .eq("role", "admin");
+    const adminIds = adminRoles?.map(r => r.user_id) || [];
 
-        // Update the new wallet
-        const { error: updateWalletError } = await supabase
-          .from("seller_wallets")
-          .update({
-            balance: order.seller_earning,
-            total_earnings: order.seller_earning,
-            updated_at: now,
-          })
-          .eq("id", newWallet.id);
-
-        if (updateWalletError) {
-          console.error("Error updating wallet:", updateWalletError);
-        }
-
-        // Record transaction
-        await supabase.from("wallet_transactions").insert({
-          wallet_id: newWallet.id,
-          order_id: orderId,
-          amount: order.seller_earning,
-          type: "credit",
-          status: "completed",
-          description: `Earnings from order #${orderId.slice(0, 8).toUpperCase()}`,
+    if (status === "ready_to_ship") {
+      // Notify buyer
+      if (fullOrder?.buyer_id) {
+        notificationsToInsert.push({
+          user_id: fullOrder.buyer_id,
+          title: "Order Ready to Ship",
+          message: `Your order #${orderId.slice(0, 8).toUpperCase()} is being prepared for shipping.`,
+          type: "order",
+          link: "/orders"
         });
-      } else {
-        // Update existing wallet
-        const newBalance = (wallet.balance || 0) + (order.seller_earning || 0);
-        const newTotalEarnings = (wallet.total_earnings || 0) + (order.seller_earning || 0);
-
-        const { error: updateWalletError } = await supabase
-          .from("seller_wallets")
-          .update({
-            balance: newBalance,
-            total_earnings: newTotalEarnings,
-            updated_at: now,
-          })
-          .eq("id", wallet.id);
-
-        if (updateWalletError) {
-          console.error("Error updating wallet:", updateWalletError);
-        }
-
-        // Record transaction
-        await supabase.from("wallet_transactions").insert({
-          wallet_id: wallet.id,
-          order_id: orderId,
-          amount: order.seller_earning,
-          type: "credit",
-          status: "completed",
-          description: `Earnings from order #${orderId.slice(0, 8).toUpperCase()}`,
-        });
-
-        console.log("Seller wallet updated:", { newBalance, newTotalEarnings });
       }
+      // Notify admins
+      adminIds.forEach(adminId => {
+        notificationsToInsert.push({
+          user_id: adminId,
+          title: "Seller Marked Ready",
+          message: `Order #${orderId.slice(0, 8).toUpperCase()} marked as ready to ship.`,
+          type: "order",
+          link: "/admin/orders"
+        });
+      });
+    } else if (status === "shipped") {
+      if (fullOrder?.buyer_id) {
+        notificationsToInsert.push({
+          user_id: fullOrder.buyer_id,
+          title: "Order Shipped",
+          message: `Your order #${orderId.slice(0, 8).toUpperCase()} has been shipped!`,
+          type: "order",
+          link: "/orders"
+        });
+      }
+    } else if (status === "delivered") {
+      if (fullOrder?.buyer_id) {
+        notificationsToInsert.push({
+          user_id: fullOrder.buyer_id,
+          title: "Order Delivered",
+          message: `Your order #${orderId.slice(0, 8).toUpperCase()} has been delivered. Please confirm delivery.`,
+          type: "order",
+          link: "/orders"
+        });
+      }
+    }
+
+    // Insert notifications
+    if (notificationsToInsert.length > 0) {
+      await supabase.from("notifications").insert(notificationsToInsert);
     }
 
     // Update order status

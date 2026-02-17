@@ -268,6 +268,35 @@ serve(async (req: Request) => {
       }
     });
 
+    // 9. Send notifications
+    const notifications = [
+      {
+        user_id: sellerId,
+        title: "Payment Received!",
+        message: `₦${sellerEarning.toLocaleString()} has been credited to your wallet for order #${orderId.slice(0, 8).toUpperCase()}.`,
+        type: "payment",
+        link: "/dashboard"
+      }
+    ];
+
+    // Notify admins
+    const { data: adminRoles } = await supabase
+      .from("user_roles")
+      .select("user_id")
+      .eq("role", "admin");
+
+    (adminRoles || []).forEach((r: { user_id: string }) => {
+      notifications.push({
+        user_id: r.user_id,
+        title: "Order Completed & Payout Released",
+        message: `Order #${orderId.slice(0, 8).toUpperCase()} completed. ₦${sellerEarning.toLocaleString()} released to seller.`,
+        type: "payment",
+        link: "/admin/orders"
+      });
+    });
+
+    await supabase.from("notifications").insert(notifications);
+
     console.log("Escrow release completed successfully:", {
       orderId,
       sellerId,

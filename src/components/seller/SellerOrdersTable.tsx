@@ -61,8 +61,10 @@ interface SellerOrdersTableProps {
 const statusConfig: Record<string, { label: string; icon: React.ComponentType<{ className?: string }>; className: string }> = {
   pending: { label: "Pending", icon: Clock, className: "bg-yellow-100 text-yellow-700" },
   processing: { label: "Processing", icon: Package, className: "bg-blue-100 text-blue-700" },
+  ready_to_ship: { label: "Ready to Ship", icon: CheckCircle, className: "bg-indigo-100 text-indigo-700" },
   shipped: { label: "Shipped", icon: Truck, className: "bg-purple-100 text-purple-700" },
   delivered: { label: "Delivered", icon: CheckCircle, className: "bg-green-100 text-green-700" },
+  completed: { label: "Completed", icon: CheckCircle, className: "bg-emerald-100 text-emerald-700" },
 };
 
 const paymentStatusConfig: Record<string, { label: string; className: string }> = {
@@ -126,7 +128,7 @@ const SellerOrdersTable = ({ orders, onOrderUpdated }: SellerOrdersTableProps) =
   };
 
   const getNextStatus = (currentStatus: string): string | null => {
-    const statusOrder = ["pending", "processing", "shipped", "delivered"];
+    const statusOrder = ["pending", "processing", "ready_to_ship", "shipped", "delivered"];
     const currentIndex = statusOrder.indexOf(currentStatus);
     if (currentIndex === -1 || currentIndex >= statusOrder.length - 1) return null;
     return statusOrder[currentIndex + 1];

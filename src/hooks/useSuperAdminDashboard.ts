@@ -674,6 +674,27 @@ export const useSuperAdminDashboard = () => {
 
   useEffect(() => {
     fetchAllData();
+
+    // Realtime subscriptions for live updates
+    const ordersChannel = supabase
+      .channel("admin-orders-realtime")
+      .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, () => {
+        fetchAllData();
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "platform_balance" }, () => {
+        fetchAllData();
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "seller_wallets" }, () => {
+        fetchAllData();
+      })
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "payouts" }, () => {
+        fetchAllData();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(ordersChannel);
+    };
   }, []);
 
   return {

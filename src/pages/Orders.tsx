@@ -60,6 +60,11 @@ const statusConfig: Record<string, { label: string; icon: React.ComponentType<{ 
     icon: Package, 
     className: "bg-blue-100 text-blue-700 border-blue-200" 
   },
+  ready_to_ship: {
+    label: "Ready to Ship",
+    icon: Package,
+    className: "bg-indigo-100 text-indigo-700 border-indigo-200"
+  },
   shipped: { 
     label: "Shipped", 
     icon: Truck, 
