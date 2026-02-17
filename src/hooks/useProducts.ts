@@ -94,18 +94,23 @@ export const useProducts = () => {
   };
 
   const deleteProduct = async (id: string) => {
+    // Optimistic update - remove from UI instantly
+    setProducts(prev => prev.filter(p => p.id !== id));
+    toast.success("Product deleted successfully");
+
+    // Soft-delete in background (mark as inactive)
     const { error } = await supabase
       .from("products")
-      .delete()
+      .update({ is_active: false })
       .eq("id", id);
     
     if (error) {
+      // Revert optimistic update on failure
+      fetchProducts();
       toast.error("Failed to delete product");
       return { error };
     }
     
-    setProducts(prev => prev.filter(p => p.id !== id));
-    toast.success("Product deleted successfully");
     return { error: null };
   };
 

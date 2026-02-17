@@ -4,6 +4,7 @@ import { Menu, X, LogOut, User, ShoppingCart } from "lucide-react";
 import { useState } from "react";
 import AfrivendLogo from "@/components/AfrivendLogo";
 import RoleSelectionDialog from "@/components/RoleSelectionDialog";
+import NotificationBell from "@/components/notifications/NotificationBell";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
 import {
@@ -57,16 +58,19 @@ const Header = () => {
             {/* Desktop CTA */}
             <div className="hidden md:flex items-center gap-4">
               {user && (
-                <Link to="/cart" className="relative">
-                  <Button variant="ghost" size="icon">
-                    <ShoppingCart className="w-5 h-5" />
-                    {totalItems > 0 && (
-                      <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-bold">
-                        {totalItems}
-                      </span>
-                    )}
-                  </Button>
-                </Link>
+                <>
+                  <NotificationBell />
+                  <Link to="/cart" className="relative">
+                    <Button variant="ghost" size="icon">
+                      <ShoppingCart className="w-5 h-5" />
+                      {totalItems > 0 && (
+                        <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-bold">
+                          {totalItems}
+                        </span>
+                      )}
+                    </Button>
+                  </Link>
+                </>
               )}
               
               {user ? (

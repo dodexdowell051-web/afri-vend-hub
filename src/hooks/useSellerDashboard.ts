@@ -7,8 +7,15 @@ interface Order {
   buyer_id: string;
   store_id: string;
   status: string;
+  payment_status: string;
   total: number;
+  seller_earning: number;
+  platform_commission: number;
+  customer_name: string | null;
+  delivery_phone: string | null;
+  delivery_address: string | null;
   created_at: string;
+  paid_at: string | null;
 }
 
 interface Wallet {

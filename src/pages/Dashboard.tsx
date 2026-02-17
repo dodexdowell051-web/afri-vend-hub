@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Package, ShoppingCart, Wallet, TrendingUp, Store, Share2, Copy, Check } from "lucide-react";
-import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProducts } from "@/hooks/useProducts";
 import { useSellerDashboard } from "@/hooks/useSellerDashboard";
@@ -15,15 +14,31 @@ import { ProductsTable } from "@/components/seller/ProductsTable";
 import { StoreSettingsDialog } from "@/components/seller/StoreSettingsDialog";
 import SellerOrdersTable from "@/components/seller/SellerOrdersTable";
 import WalletCard from "@/components/seller/WalletCard";
-
+import WithdrawalDialog from "@/components/seller/WithdrawalDialog";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const Dashboard = () => {
   const [linkCopied, setLinkCopied] = useState(false);
+  const [walletId, setWalletId] = useState<string | null>(null);
   const navigate = useNavigate();
   const { user, profile, store, loading } = useAuth();
   const { products, loading: productsLoading, fetchProducts } = useProducts();
-  const { stats, orders, loading: statsLoading } = useSellerDashboard();
+  const { stats, orders, loading: statsLoading, refreshData } = useSellerDashboard();
+
+  // Fetch wallet ID for withdrawal
+  useEffect(() => {
+    if (user) {
+      supabase
+        .from("seller_wallets")
+        .select("id")
+        .eq("user_id", user.id)
+        .maybeSingle()
+        .then(({ data }) => {
+          if (data) setWalletId(data.id);
+        });
+    }
+  }, [user]);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -167,63 +182,33 @@ const Dashboard = () => {
             </TabsContent>
 
             <TabsContent value="orders">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Recent Orders</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {orders.length === 0 ? (
-                    <div className="text-center py-12">
-                      <ShoppingCart className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                      <h3 className="text-lg font-semibold mb-2">No orders yet</h3>
-                      <p className="text-muted-foreground">Orders will appear here when customers buy your products</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {orders.map((order) => (
-                        <div key={order.id} className="flex items-center justify-between p-4 border rounded-xl">
-                          <div>
-                            <p className="font-medium">Order #{order.id.slice(0, 8)}</p>
-                            <p className="text-sm text-muted-foreground">
-                              {new Date(order.created_at).toLocaleDateString()}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <p className="font-bold">₦{order.total.toLocaleString()}</p>
-                            <span className={`text-sm px-2 py-1 rounded-full ${
-                              order.status === 'completed' ? 'bg-green-100 text-green-700' :
-                              order.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                              'bg-gray-100 text-gray-700'
-                            }`}>
-                              {order.status}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+              <SellerOrdersTable orders={orders} onOrderUpdated={refreshData} />
             </TabsContent>
 
             <TabsContent value="earnings">
               <Card>
-                <CardHeader>
+                <CardHeader className="flex flex-row items-center justify-between">
                   <CardTitle>Wallet & Earnings</CardTitle>
+                  <WithdrawalDialog 
+                    balance={stats.earnings} 
+                    walletId={walletId}
+                    onSuccess={refreshData}
+                  />
                 </CardHeader>
                 <CardContent>
-                  <div className="grid md:grid-cols-2 gap-6">
+                  <div className="grid md:grid-cols-2 gap-6 mb-6">
                     <div className="p-6 bg-gradient-to-br from-primary/10 to-primary/5 rounded-2xl">
                       <p className="text-sm text-muted-foreground mb-2">Available Balance</p>
                       <p className="text-4xl font-bold text-primary">₦{stats.earnings.toLocaleString()}</p>
                       <p className="text-sm text-muted-foreground mt-4">Ready for withdrawal</p>
                     </div>
-                    <div className="p-6 bg-gradient-to-br from-green-100 to-green-50 rounded-2xl">
+                    <div className="p-6 bg-gradient-to-br from-primary/5 to-muted rounded-2xl">
                       <p className="text-sm text-muted-foreground mb-2">Total Earnings</p>
-                      <p className="text-4xl font-bold text-green-700">₦{stats.totalEarnings.toLocaleString()}</p>
+                      <p className="text-4xl font-bold text-foreground">₦{stats.totalEarnings.toLocaleString()}</p>
                       <p className="text-sm text-muted-foreground mt-4">All-time revenue</p>
                     </div>
                   </div>
+                  <WalletCard balance={stats.earnings} totalEarnings={stats.totalEarnings} />
                 </CardContent>
               </Card>
             </TabsContent>
