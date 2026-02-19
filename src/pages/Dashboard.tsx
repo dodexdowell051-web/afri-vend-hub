@@ -60,29 +60,29 @@ const Dashboard = () => {
     <div className="min-h-screen bg-background">
       <Header />
       
-      <main className="pt-24 pb-16">
+      <main className="pt-20 md:pt-24 pb-12 md:pb-16">
         <div className="container mx-auto px-4">
           {/* Welcome Header */}
-          <div className="mb-8">
-            <div className="flex items-center justify-between">
+          <div className="mb-6 md:mb-8">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center overflow-hidden">
+                <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-primary/10 flex items-center justify-center overflow-hidden shrink-0">
                   {store.logo_url ? (
                     <img src={store.logo_url} alt={store.name} className="w-full h-full object-cover" />
                   ) : (
-                    <Store className="w-6 h-6 text-primary" />
+                    <Store className="w-5 h-5 md:w-6 md:h-6 text-primary" />
                   )}
                 </div>
-                <div>
-                  <h1 className="text-2xl font-bold">{store.name}</h1>
-                  <p className="text-muted-foreground">Welcome back, {profile.first_name}!</p>
+                <div className="min-w-0">
+                  <h1 className="text-xl md:text-2xl font-bold truncate">{store.name}</h1>
+                  <p className="text-sm text-muted-foreground">Welcome back, {profile.first_name}!</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 <Button
                   variant="outline"
                   size="sm"
-                  className="gap-2"
+                  className="gap-2 text-xs sm:text-sm"
                   onClick={() => {
                     const storeLink = `${window.location.origin}/store/${store.id}`;
                     navigator.clipboard.writeText(storeLink);
@@ -103,58 +103,58 @@ const Dashboard = () => {
           </div>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
             <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                    <Package className="w-6 h-6 text-primary" />
+              <CardContent className="p-4 md:p-6">
+                <div className="flex items-center gap-3 md:gap-4">
+                  <div className="w-9 h-9 md:w-12 md:h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                    <Package className="w-4 h-4 md:w-6 md:h-6 text-primary" />
                   </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Products</p>
-                    <p className="text-2xl font-bold">{stats.totalProducts}</p>
+                  <div className="min-w-0">
+                    <p className="text-xs md:text-sm text-muted-foreground">Products</p>
+                    <p className="text-lg md:text-2xl font-bold">{stats.totalProducts}</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
             
             <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center">
-                    <ShoppingCart className="w-6 h-6 text-secondary" />
+              <CardContent className="p-4 md:p-6">
+                <div className="flex items-center gap-3 md:gap-4">
+                  <div className="w-9 h-9 md:w-12 md:h-12 rounded-xl bg-secondary/10 flex items-center justify-center shrink-0">
+                    <ShoppingCart className="w-4 h-4 md:w-6 md:h-6 text-secondary" />
                   </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Orders</p>
-                    <p className="text-2xl font-bold">{stats.totalOrders}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-accent/30 flex items-center justify-center">
-                    <Wallet className="w-6 h-6 text-accent-foreground" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Balance</p>
-                    <p className="text-2xl font-bold">₦{stats.earnings.toLocaleString()}</p>
+                  <div className="min-w-0">
+                    <p className="text-xs md:text-sm text-muted-foreground">Orders</p>
+                    <p className="text-lg md:text-2xl font-bold">{stats.totalOrders}</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
             
             <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center">
-                    <TrendingUp className="w-6 h-6 text-green-600" />
+              <CardContent className="p-4 md:p-6">
+                <div className="flex items-center gap-3 md:gap-4">
+                  <div className="w-9 h-9 md:w-12 md:h-12 rounded-xl bg-accent/30 flex items-center justify-center shrink-0">
+                    <Wallet className="w-4 h-4 md:w-6 md:h-6 text-accent-foreground" />
                   </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Total Earnings</p>
-                    <p className="text-2xl font-bold">₦{stats.totalEarnings.toLocaleString()}</p>
+                  <div className="min-w-0">
+                    <p className="text-xs md:text-sm text-muted-foreground">Balance</p>
+                    <p className="text-lg md:text-2xl font-bold truncate">₦{stats.earnings.toLocaleString()}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="p-4 md:p-6">
+                <div className="flex items-center gap-3 md:gap-4">
+                  <div className="w-9 h-9 md:w-12 md:h-12 rounded-xl bg-green-100 flex items-center justify-center shrink-0">
+                    <TrendingUp className="w-4 h-4 md:w-6 md:h-6 text-green-600" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs md:text-sm text-muted-foreground">Total Earnings</p>
+                    <p className="text-lg md:text-2xl font-bold truncate">₦{stats.totalEarnings.toLocaleString()}</p>
                   </div>
                 </div>
               </CardContent>
@@ -162,21 +162,25 @@ const Dashboard = () => {
           </div>
 
           {/* Main Content Tabs */}
-          <Tabs defaultValue="products" className="space-y-6">
-            <TabsList className="h-12">
-              <TabsTrigger value="products" className="h-10">Products</TabsTrigger>
-              <TabsTrigger value="orders" className="h-10">Orders</TabsTrigger>
-              <TabsTrigger value="earnings" className="h-10">Earnings</TabsTrigger>
+          <Tabs defaultValue="products" className="space-y-4 md:space-y-6">
+            <TabsList className="h-10 md:h-12 w-full sm:w-auto">
+              <TabsTrigger value="products" className="h-8 md:h-10 flex-1 sm:flex-none text-xs sm:text-sm">Products</TabsTrigger>
+              <TabsTrigger value="orders" className="h-8 md:h-10 flex-1 sm:flex-none text-xs sm:text-sm">Orders</TabsTrigger>
+              <TabsTrigger value="earnings" className="h-8 md:h-10 flex-1 sm:flex-none text-xs sm:text-sm">Earnings</TabsTrigger>
             </TabsList>
 
             <TabsContent value="products">
               <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <CardTitle>My Products</CardTitle>
+                <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-4 md:p-6">
+                  <CardTitle className="text-lg md:text-2xl">My Products</CardTitle>
                   <AddProductDialog onSuccess={fetchProducts} />
                 </CardHeader>
-                <CardContent>
-                  <ProductsTable products={products} loading={productsLoading} />
+                <CardContent className="p-4 md:p-6 pt-0">
+                  <div className="overflow-x-auto -mx-4 md:mx-0">
+                    <div className="min-w-[500px] md:min-w-0 px-4 md:px-0">
+                      <ProductsTable products={products} loading={productsLoading} />
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
@@ -187,25 +191,25 @@ const Dashboard = () => {
 
             <TabsContent value="earnings">
               <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <CardTitle>Wallet & Earnings</CardTitle>
+                <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-4 md:p-6">
+                  <CardTitle className="text-lg md:text-2xl">Wallet & Earnings</CardTitle>
                   <WithdrawalDialog 
                     balance={stats.earnings} 
                     walletId={walletId}
                     onSuccess={refreshData}
                   />
                 </CardHeader>
-                <CardContent>
-                  <div className="grid md:grid-cols-2 gap-6 mb-6">
-                    <div className="p-6 bg-gradient-to-br from-primary/10 to-primary/5 rounded-2xl">
-                      <p className="text-sm text-muted-foreground mb-2">Available Balance</p>
-                      <p className="text-4xl font-bold text-primary">₦{stats.earnings.toLocaleString()}</p>
-                      <p className="text-sm text-muted-foreground mt-4">Ready for withdrawal</p>
+                <CardContent className="p-4 md:p-6 pt-0">
+                  <div className="grid md:grid-cols-2 gap-4 md:gap-6 mb-6">
+                    <div className="p-4 md:p-6 bg-gradient-to-br from-primary/10 to-primary/5 rounded-2xl">
+                      <p className="text-xs md:text-sm text-muted-foreground mb-1 md:mb-2">Available Balance</p>
+                      <p className="text-2xl md:text-4xl font-bold text-primary">₦{stats.earnings.toLocaleString()}</p>
+                      <p className="text-xs md:text-sm text-muted-foreground mt-2 md:mt-4">Ready for withdrawal</p>
                     </div>
-                    <div className="p-6 bg-gradient-to-br from-primary/5 to-muted rounded-2xl">
-                      <p className="text-sm text-muted-foreground mb-2">Total Earnings</p>
-                      <p className="text-4xl font-bold text-foreground">₦{stats.totalEarnings.toLocaleString()}</p>
-                      <p className="text-sm text-muted-foreground mt-4">All-time revenue</p>
+                    <div className="p-4 md:p-6 bg-gradient-to-br from-primary/5 to-muted rounded-2xl">
+                      <p className="text-xs md:text-sm text-muted-foreground mb-1 md:mb-2">Total Earnings</p>
+                      <p className="text-2xl md:text-4xl font-bold text-foreground">₦{stats.totalEarnings.toLocaleString()}</p>
+                      <p className="text-xs md:text-sm text-muted-foreground mt-2 md:mt-4">All-time revenue</p>
                     </div>
                   </div>
                   <WalletCard balance={stats.earnings} totalEarnings={stats.totalEarnings} />
