@@ -165,23 +165,6 @@ export const SuperAdminOverview = ({
       </div>
 
       <TabsContent value="overview" className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-lg">
-            <Crown className="w-7 h-7 text-primary-foreground" />
-          </div>
-          <div>
-            <h2 className="text-2xl font-bold">Super Admin Dashboard</h2>
-            <p className="text-muted-foreground">Complete platform control & oversight</p>
-          </div>
-        </div>
-        <Button variant="outline" onClick={onRefresh} className="gap-2">
-          <RefreshCw className="w-4 h-4" />
-          Refresh Data
-        </Button>
-      </div>
-
       {/* Financial Overview - Top Priority */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card className="border-2 border-primary/30 bg-gradient-to-br from-primary/5 to-primary/10">
