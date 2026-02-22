@@ -24,6 +24,9 @@ const Checkout = lazy(() => import("./pages/Checkout"));
 const Orders = lazy(() => import("./pages/Orders"));
 const OrderConfirmation = lazy(() => import("./pages/OrderConfirmation"));
 const About = lazy(() => import("./pages/About"));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+const TermsOfService = lazy(() => import("./pages/TermsOfService"));
+const Careers = lazy(() => import("./pages/Careers"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const StorePage = lazy(() => import("./pages/StorePage"));
 
@@ -82,6 +85,9 @@ const App = () => (
               <Route path="/orders" element={<LazyPage><Orders /></LazyPage>} />
               <Route path="/order-confirmation" element={<LazyPage><OrderConfirmation /></LazyPage>} />
               <Route path="/about" element={<LazyPage><About /></LazyPage>} />
+              <Route path="/privacy-policy" element={<LazyPage><PrivacyPolicy /></LazyPage>} />
+              <Route path="/terms-of-service" element={<LazyPage><TermsOfService /></LazyPage>} />
+              <Route path="/careers" element={<LazyPage><Careers /></LazyPage>} />
               <Route path="/store/:storeId" element={<LazyPage><StorePage /></LazyPage>} />
               
               {/* Admin Routes - Lazy loaded */}
